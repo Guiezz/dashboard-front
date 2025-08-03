@@ -1,103 +1,100 @@
-import Image from "next/image";
+// src/app/page.tsx
+import { IdentificationData } from "@/lib/types";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { MapPin, Info } from "lucide-react";
+import IdentificationMapWrapper from "@/components/dashboard/IdentificationMapWrapper";
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+async function getIdentificationData(): Promise<IdentificationData | null> {
+  const API_BASE_URL = "http://localhost:8000";
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/identification`, {
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      throw new Error("Falha ao buscar dados de identificação");
+    }
+    const data: IdentificationData = await res.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default async function IdentificationPage() {
+  const data = await getIdentificationData();
+
+  if (!data) {
+    return (
+      <main className="flex flex-1 items-center justify-center">
+        <div className="text-center p-4">
+          <h1 className="text-2xl font-bold text-red-500">
+            Erro ao carregar os dados.
+          </h1>
+          <p>
+            Verifique se a API Python e o endpoint de identificação estão
+            funcionando.
+          </p>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+    );
+  }
+
+  const location = data.location_data[0];
+
+  return (
+    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+      <div className="flex items-center">
+        <h1 className="text-lg font-semibold md:text-2xl">
+          Identificação do Reservatório
+        </h1>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="lg:col-span-5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Sobre o Hidrossistema Patu
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="prose prose-sm max-w-none text-justify">
+            <p>{data.identification_text}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Localização
+            </CardTitle>
+            <CardDescription>Coordenadas do Açude Patu</CardDescription>
+          </CardHeader>
+
+          <IdentificationMapWrapper
+            lat={location.lat}
+            lon={location.lon}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+          <CardContent className="grid gap-4">
+            <div className="flex items-center justify-between rounded-md border p-3">
+              <span className="text-sm font-medium">Latitude</span>
+              <span className="text-sm font-semibold">{location.lat}</span>
+            </div>
+            <div className="flex items-center justify-between rounded-md border p-3">
+              <span className="text-sm font-medium">Longitude</span>
+              <span className="text-sm font-semibold">{location.lon}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </main>
   );
 }
