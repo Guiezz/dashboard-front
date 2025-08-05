@@ -3,11 +3,10 @@ import { IdentificationData } from "@/lib/types";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MapPin, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import IdentificationMapWrapper from "@/components/dashboard/IdentificationMapWrapper";
 
 async function getIdentificationData(): Promise<IdentificationData | null> {
@@ -49,49 +48,36 @@ export default async function IdentificationPage() {
   const location = data.location_data[0];
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+    // O layout principal agora é uma coluna flexível com um espaçamento maior
+    <main className="flex flex-1 flex-col gap-8 p-4 lg:p-6">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">
           Identificação do Reservatório
         </h1>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-5">
+      {/* 1. O MAPA FICA NO TOPO, OCUPANDO A LARGURA TOTAL */}
+      <div className="w-full">
+        <IdentificationMapWrapper
+          lat={location.lat}
+          lon={location.lon}
+        />
+      </div>
+
+      {/* 2. O TEXTO FICA EMBAIXO, CENTRALIZADO E COM LARGURA MÁXIMA */}
+      <div className="w-full max-w-4xl mx-auto">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Info className="h-5 w-5" />
               Sobre o Hidrossistema Patu
             </CardTitle>
           </CardHeader>
-          <CardContent className="prose prose-sm max-w-none text-justify">
-            <p>{data.identification_text}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              Localização
-            </CardTitle>
-            <CardDescription>Coordenadas do Açude Patu</CardDescription>
-          </CardHeader>
-
-          <IdentificationMapWrapper
-            lat={location.lat}
-            lon={location.lon}
-          />
-
-          <CardContent className="grid gap-4">
-            <div className="flex items-center justify-between rounded-md border p-3">
-              <span className="text-sm font-medium">Latitude</span>
-              <span className="text-sm font-semibold">{location.lat}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-md border p-3">
-              <span className="text-sm font-medium">Longitude</span>
-              <span className="text-sm font-semibold">{location.lon}</span>
-            </div>
+          <CardContent className="prose prose-lg max-w-none text-justify">
+            {/* O texto é dividido por quebras de linha para melhor formatação */}
+            {data.identification_text.split('\n').map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+            ))}
           </CardContent>
         </Card>
       </div>
