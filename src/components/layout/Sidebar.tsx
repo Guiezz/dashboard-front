@@ -1,8 +1,8 @@
 // src/components/layout/Sidebar.tsx
-"use client"; // 1. Adicionamos esta diretiva para poder usar o hook usePathname
+"use client"; // Necessário para usar o hook usePathname
 
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // 2. Importamos o hook
+import { usePathname } from "next/navigation"; // Importamos o hook
 import {
   Tooltip,
   TooltipContent,
@@ -16,7 +16,7 @@ import {
   Activity,
   FileText,
   AlertTriangle,
-  ListChecks,
+  ListChecks, // Ícone mais apropriado para Planos de Ação
   Users,
   Droplets,
   PanelLeftClose,
@@ -29,12 +29,12 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
-  // 3. Usamos o hook para obter a rota atual (ex: "/", "/estado-de-seca")
+  // Usamos o hook para obter a rota atual (ex: "/", "/estado-de-seca")
   const pathname = usePathname();
 
   return (
-    // 4. Adicionamos z-10 para garantir que a sidebar e os tooltips fiquem por cima do mapa
-    <div className="hidden border-r bg-muted/40 md:block z-10">
+    // Adicionamos z-20 para garantir que a sidebar e os tooltips fiquem por cima do mapa
+    <div className="hidden border-r bg-muted/40 md:block z-20">
       <div className="flex h-full max-h-screen flex-col gap-2 relative">
         <div className="flex h-16 items-center border-b px-4 lg:px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
@@ -45,7 +45,8 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
 
         <TooltipProvider>
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-            {/* 5. A lógica de classes agora é dinâmica para cada link */}
+            
+            {/* A lógica de classes agora é dinâmica e correta para cada link */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -102,12 +103,12 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 <Link
                   href="/planos-de-acao"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    pathname === "/historico"
+                    pathname === "/planos-de-acao" // Correção aqui
                       ? "bg-muted text-primary"
                       : "text-muted-foreground"
                   }`}
                 >
-                  <FileText className="h-4 w-4" />
+                  <ListChecks className="h-4 w-4" />
                   {!isCollapsed && <span>Planos de Ação</span>}
                 </Link>
               </TooltipTrigger>
@@ -119,7 +120,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 <Link
                   href="/impactos"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    pathname === "/historico"
+                    pathname === "/impactos" // Correção aqui
                       ? "bg-muted text-primary"
                       : "text-muted-foreground"
                   }`}
@@ -136,7 +137,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 <Link
                   href="/usos"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    pathname === "/historico"
+                    pathname === "/usos" // Correção aqui
                       ? "bg-muted text-primary"
                       : "text-muted-foreground"
                   }`}
@@ -147,8 +148,6 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right">Usos</TooltipContent>
             </Tooltip>
-
-            {/* Repita o padrão para os outros links */}
           </nav>
         </TooltipProvider>
 

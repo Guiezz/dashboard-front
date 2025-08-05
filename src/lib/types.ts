@@ -35,3 +35,9 @@ export interface IdentificationData {
     lon: number;
   }[];
 }
+
+export interface OngoingAction {
+  'AÇÕES': string;
+  'RESPONSÁVEIS': string;
+  'SITUAÇÃO': string;
+}
