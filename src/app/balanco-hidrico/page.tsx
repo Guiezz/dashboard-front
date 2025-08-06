@@ -5,7 +5,6 @@ import { BalancoHidricoChart } from "@/components/balance/BalancoHidricoChart";
 import { ComposicaoDemandaChart } from "@/components/balance/ComposicaoDemandaChart";
 import { OfertaDemandaChart } from "@/components/balance/OfertaDemandaChart";
 
-// Defina os tipos de dados esperados da API
 interface StaticChartData {
   balancoMensal: any[];
   composicaoDemanda: any[];
@@ -19,7 +18,6 @@ export default function BalancoHidricoPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Use a URL completa da sua API se necessário
         const response = await fetch(
           "http://127.0.0.1:8000/api/water-balance/static-charts"
         );
@@ -46,13 +44,13 @@ export default function BalancoHidricoPage() {
   }
 
   if (!chartData) {
-    return <div>Carregando dados dos gráficos...</div>;
+    return <div className="p-4">Carregando dados dos gráficos...</div>;
   }
 
   return (
-    <div className="space-y-4">
+    <div className="  px-2 md:px-6 lg:px-8 py-8 space-y-6">
       <BalancoHidricoChart data={chartData.balancoMensal} />
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         <ComposicaoDemandaChart data={chartData.composicaoDemanda} />
         <OfertaDemandaChart data={chartData.ofertaDemanda} />
       </div>
