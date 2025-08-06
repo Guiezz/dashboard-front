@@ -7,8 +7,8 @@ import {
 } from "@/lib/types";
 import { VolumeChart } from "@/components/dashboard/VolumeChart";
 import { MetricCards } from "@/components/dashboard/MetricCards";
+import { PaginatedTableAcoes } from "@/components/dashboard/PaginatedTableAcoes";
 import { PaginatedTableMedidas } from "@/components/dashboard/PaginatedTableMedidas";
-import { ActionStatusTabs } from "@/components/dashboard/ActionStatusTabs";
 import {
   Card,
   CardContent,
@@ -25,9 +25,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Header } from "@/components/layout/Header";
+import { ActionStatusTabs } from "@/components/dashboard/ActionStatusTabs";
 
-// getDashboardData e getOngoingActions (sem alteração)
 async function getDashboardData() {
   const API_BASE_URL = "http://localhost:8000";
   try {
@@ -67,7 +66,7 @@ async function getOngoingActions(): Promise<OngoingAction[] | null> {
   }
 }
 
-// 1. ADICIONAMOS A FUNÇÃO PARA BUSCAR AS AÇÕES CONCLUÍDAS
+// Adicionando a função para buscar ações concluídas
 async function getCompletedActions(): Promise<OngoingAction[] | null> {
   const API_BASE_URL = "http://localhost:8000";
   try {
@@ -85,8 +84,8 @@ async function getCompletedActions(): Promise<OngoingAction[] | null> {
   }
 }
 
+
 export default async function EstadoDeSecaPage() {
-  // 2. BUSCAMOS OS TRÊS CONJUNTOS DE DADOS EM PARALELO
   const [dashboardData, ongoingActions, completedActions] = await Promise.all([
     getDashboardData(),
     getOngoingActions(),
@@ -130,6 +129,7 @@ export default async function EstadoDeSecaPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* --- CÓDIGO DO HISTÓRICO REINSERIDO AQUI --- */}
             <Table>
               <TableHeader>
                 <TableRow>
@@ -156,12 +156,12 @@ export default async function EstadoDeSecaPage() {
         </Card>
       </div>
 
+      {/* Medidas e Ações com paginação */}
       <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
         <PaginatedTableMedidas
           data={summary.medidasRecomendadas}
           estado={summary.estadoAtualSeca}
         />
-        {/* 4. PASSAMOS AS LISTAS CORRETAS PARA O COMPONENTE DE ABAS */}
         <ActionStatusTabs ongoing={ongoingActions} completed={completedActions} />
       </div>
     </main>
