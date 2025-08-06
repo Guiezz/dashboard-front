@@ -41,3 +41,33 @@ export interface OngoingAction {
   'RESPONSÁVEIS': string;
   'SITUAÇÃO': string;
 }
+
+export interface WaterBalanceSummary {
+  afluencia_m3s: number;
+  defluencia_m3s: number;
+  balanco_m3s: number;
+}
+
+export interface HistoricalDataPoint {
+  Data: string;
+  volume_percentual: number;
+}
+
+export interface TriggerData {
+  'Mês': string;
+  'Gatilho para ALERTA (Abaixo de)': number;
+  'Gatilho para SECA (Abaixo de)': number;
+  'Gatilho para SECA SEVERA (Abaixo de)': number;
+}
+
+export interface UsageAnalysisItem {
+  uso: string;
+  meta_l_s: number;
+  real_l_s: number;
+}
+
+export interface WaterUsageAnalysis {
+  estado_atual: string;
+  analise_de_uso: UsageAnalysisItem[];
+}
+
