@@ -1,60 +1,53 @@
 // src/components/layout/Sidebar.tsx
-"use client"; // Necessário para usar o hook usePathname
+"use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // Importamos o hook
+import { usePathname } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
 import {
   Home,
   Scale,
   Activity,
-  FileText,
+  ListChecks,
   AlertTriangle,
-  ListChecks, // Ícone mais apropriado para Planos de Ação
   Users,
   Droplets,
-  PanelLeftClose,
-  PanelRightClose,
 } from "lucide-react";
 
+// A interface não precisa mais do setIsCollapsed, mas podemos manter para o futuro
 interface SidebarProps {
   isCollapsed: boolean;
-  setIsCollapsed: (isCollapsed: boolean) => void;
 }
 
-export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
-  // Usamos o hook para obter a rota atual (ex: "/", "/estado-de-seca")
+export function Sidebar({ isCollapsed }: SidebarProps) {
   const pathname = usePathname();
+  const isActive = (path: string) => pathname === path;
 
   return (
-    // Adicionamos z-20 para garantir que a sidebar e os tooltips fiquem por cima do mapa
-    <div className="hidden border-r bg-muted/40 md:block z-20">
-      <div className="flex h-full max-h-screen flex-col gap-2 relative">
+    <aside className={`hidden border-r bg-background md:block z-10 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-56'}`}>
+      <div className="flex h-full max-h-screen flex-col">
         <div className="flex h-16 items-center border-b px-4 lg:px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <Droplets className="h-6 w-6" />
-            {!isCollapsed && <span>Monitoramento</span>}
+            {!isCollapsed && <span className="transition-opacity duration-300">Monitoramento</span>}
           </Link>
         </div>
 
         <TooltipProvider>
-          <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+          <nav className="flex-1 overflow-auto px-2 text-sm font-medium lg:px-4 py-2">
             
-            {/* A lógica de classes agora é dinâmica e correta para cada link */}
+            {/* Link de Identificação */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    pathname === "/"
-                      ? "bg-muted text-primary" // Estilo se ativo
-                      : "text-muted-foreground" // Estilo se inativo
+                    isActive("/") ? "bg-muted text-primary" : "text-muted-foreground"
                   }`}
                 >
                   <Home className="h-4 w-4" />
@@ -63,15 +56,15 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right">Identificação</TooltipContent>
             </Tooltip>
-
+            
+            {/* (O resto dos seus links <Tooltip> continuam aqui, sem alterações) */}
+            
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/balanco-hidrico"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    pathname === "/balanco-hidrico"
-                      ? "bg-muted text-primary"
-                      : "text-muted-foreground"
+                    isActive("/balanco-hidrico") ? "bg-muted text-primary" : "text-muted-foreground"
                   }`}
                 >
                   <Scale className="h-4 w-4" />
@@ -80,22 +73,20 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right">Balanço Hídrico</TooltipContent>
             </Tooltip>
-
+            
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/estado-de-seca"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    pathname === "/estado-de-seca"
-                      ? "bg-muted text-primary"
-                      : "text-muted-foreground"
+                    isActive("/estado-de-seca") ? "bg-muted text-primary" : "text-muted-foreground"
                   }`}
                 >
                   <Activity className="h-4 w-4" />
-                  {!isCollapsed && <span>Estado de seca</span>}
+                  {!isCollapsed && <span>Estado de Seca</span>}
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">Estado de seca</TooltipContent>
+              <TooltipContent side="right">Estado de Seca</TooltipContent>
             </Tooltip>
 
             <Tooltip>
@@ -103,9 +94,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 <Link
                   href="/planos-de-acao"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    pathname === "/planos-de-acao" // Correção aqui
-                      ? "bg-muted text-primary"
-                      : "text-muted-foreground"
+                    isActive("/planos-de-acao") ? "bg-muted text-primary" : "text-muted-foreground"
                   }`}
                 >
                   <ListChecks className="h-4 w-4" />
@@ -114,15 +103,13 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right">Planos de Ação</TooltipContent>
             </Tooltip>
-
+            
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   href="/impactos"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    pathname === "/impactos" // Correção aqui
-                      ? "bg-muted text-primary"
-                      : "text-muted-foreground"
+                    isActive("/impactos") ? "bg-muted text-primary" : "text-muted-foreground"
                   }`}
                 >
                   <AlertTriangle className="h-4 w-4" />
@@ -135,33 +122,24 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="/usos"
+                  href="/usos-agua"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    pathname === "/usos" // Correção aqui
-                      ? "bg-muted text-primary"
-                      : "text-muted-foreground"
+                    isActive("/usos-agua") ? "bg-muted text-primary" : "text-muted-foreground"
                   }`}
                 >
                   <Users className="h-4 w-4" />
-                  {!isCollapsed && <span>Usos</span>}
+                  {!isCollapsed && <span>Usos da Água</span>}
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">Usos</TooltipContent>
+              <TooltipContent side="right">Usos da Água</TooltipContent>
             </Tooltip>
+            
           </nav>
         </TooltipProvider>
 
-        <div className="absolute bottom-4 right-[-20px]">
-          <Button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            size="icon"
-            variant="outline"
-            className="rounded-full"
-          >
-            {isCollapsed ? <PanelRightClose /> : <PanelLeftClose />}
-          </Button>
-        </div>
+        {/* O BOTÃO QUE ESTAVA AQUI FOI REMOVIDO */}
+        
       </div>
-    </div>
+    </aside>
   );
 }

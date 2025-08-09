@@ -1,13 +1,11 @@
 // src/app/layout.tsx
-"use client"; // Esta diretiva é necessária para o useState e para o ThemeProvider
+"use client"; // Necessário para usar useState e ThemeProvider
 
 import { useState } from "react";
 import { Inter } from "next/font/google";
-import "./globals.css"; // Seus estilos globais
+import "./globals.css";
 
-// 1. Importe o nosso Provedor de Tema
 import { ThemeProvider } from "@/components/theme-provider";
-
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 
@@ -18,33 +16,27 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // O estado para a sua sidebar continua aqui, sem problemas
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    // 2. Adicione `suppressHydrationWarning` para evitar avisos do next-themes
     <html lang="pt-br" suppressHydrationWarning>
       <body className={inter.className}>
-        {/* 3. Envolva TUDO com o ThemeProvider */}
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark" // A linha mais importante: define o tema escuro como padrão
-          enableSystem={false} // Ignora o tema do sistema do utilizador
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
-          {/* 4. O seu layout (o "AppShell") fica aqui dentro */}
-          <div
-            className={`grid min-h-screen w-full transition-all duration-300 ease-in-out 
-            ${isCollapsed 
-              ? 'md:grid-cols-[80px_1fr]' // Largura quando recolhido
-              : 'md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]' // Largura quando expandido
-            }`}
-          >
-            <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-            
-            <div className="flex flex-col">
-              <Header />
-              {children}
+          <div className="flex min-h-screen w-full">
+            {/* Sidebar com controle de colapso */}
+            <Sidebar isCollapsed={isCollapsed} />
+
+            <div className="flex flex-col flex-1 w-full">
+              {/* Header controlando a Sidebar */}
+              <Header isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+              <main className="flex-1 p-4 sm:px-6 sm:py-0 md:gap-8">
+                {children}
+              </main>
             </div>
           </div>
         </ThemeProvider>
