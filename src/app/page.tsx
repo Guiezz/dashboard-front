@@ -45,7 +45,7 @@ export default async function IdentificationPage() {
     );
   }
 
-  const location = data.location_data[0];
+  const location = data;
 
   return (
     // O layout principal agora é uma coluna flexível com um espaçamento maior
@@ -60,7 +60,7 @@ export default async function IdentificationPage() {
       <div className="w-full">
         <IdentificationMapWrapper
           lat={location.lat}
-          lon={location.lon}
+          lon={location.long}
         />
       </div>
 
@@ -74,8 +74,7 @@ export default async function IdentificationPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="prose prose-lg max-w-none text-justify">
-            {/* O texto é dividido por quebras de linha para melhor formatação */}
-            {data.identification_text.split('\n').map((paragraph, index) => (
+            {data.descricao.split('\n').map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
             ))}
           </CardContent>

@@ -29,11 +29,10 @@ export interface ChartDataPoint {
 }
 
 export interface IdentificationData {
-  identification_text: string;
-  location_data: {
-    lat: number;
-    lon: number;
-  }[];
+  descricao: string; // Assumindo que a coluna do texto se chama 'descricao'
+  lat: number;
+  long: number;
+  // Adicione outros campos que a sua API envia, se necessário
 }
 
 export interface OngoingAction {

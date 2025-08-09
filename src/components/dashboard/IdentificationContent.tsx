@@ -22,7 +22,7 @@ interface IdentificationContentProps {
 }
 
 export default function IdentificationContent({ data }: IdentificationContentProps) {
-  const location = data.location_data[0];
+  const location = data
 
   return (
     <div className="grid gap-6 lg:grid-cols-7">
@@ -34,7 +34,7 @@ export default function IdentificationContent({ data }: IdentificationContentPro
           </CardTitle>
         </CardHeader>
         <CardContent className="prose prose-sm max-w-none text-justify">
-          <p>{data.identification_text}</p>
+          <p>{data.descricao}</p>
         </CardContent>
       </Card>
 
@@ -47,7 +47,7 @@ export default function IdentificationContent({ data }: IdentificationContentPro
           <CardDescription>Mapa do Reservatório</CardDescription>
         </CardHeader>
         <CardContent>
-          <Map lat={location.lat} lon={location.lon} />
+          <Map lat={location.lat} lon={location.long} />
           <div className="mt-4 grid gap-4">
             <div className="flex items-center justify-between rounded-md border p-3">
               <span className="text-sm font-medium">Latitude</span>
@@ -55,7 +55,7 @@ export default function IdentificationContent({ data }: IdentificationContentPro
             </div>
             <div className="flex items-center justify-between rounded-md border p-3">
               <span className="text-sm font-medium">Longitude</span>
-              <span className="text-sm font-semibold">{location.lon}</span>
+              <span className="text-sm font-semibold">{location.long}</span>
             </div>
           </div>
         </CardContent>

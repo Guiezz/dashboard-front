@@ -53,16 +53,22 @@ export function VolumeChart({ data }: VolumeChartProps) {
                 contentStyle={{ backgroundColor: "#fff", borderColor: "#ccc" }}
                 formatter={(value: number, name: string) => [`${value.toFixed(1)} Hm³`, name]}
                 labelFormatter={(label) =>
-                  `Data: ${format(new Date(label), "dd/MM/yyyy", { locale: ptBR })}`
+                  `Data: ${format(new Date(label), "dd/MM/yyyy", { locale: ptBR })},
+                  Meta1: ${metas ? (metas.meta1 * 100) : "N/A"},
+                  Meta2: ${metas ? metas.meta2 * 100 : "N/A"},
+                  Meta3: ${metas ? metas.meta3 * 100 : "N/A"}
+                  
+                  `
+
                 }
               />
               
               {/* Linhas horizontais fixas para as metas */}
               {metas && (
                 <>
-                  <ReferenceLine y={metas.meta1} stroke="#991b1b" strokeWidth={2} strokeDasharray="4 4" label={{ value: "Meta1", position: "insideRight", fill: "#991b1b", fontSize: 12 }} />
-                  <ReferenceLine y={metas.meta2} stroke="#b45309" strokeWidth={2} strokeDasharray="4 4" label={{ value: "Meta2", position: "insideRight", fill: "#b45309", fontSize: 12 }} />
-                  <ReferenceLine y={metas.meta3} stroke="#ca8a04" strokeWidth={2} strokeDasharray="4 4" label={{ value: "Meta3", position: "insideRight", fill: "#ca8a04", fontSize: 12 }} />
+                  <ReferenceLine y={metas.meta1 * 100} stroke="#991b1b" strokeWidth={2} strokeDasharray="4 4" label={{ value: "Meta1", position: "insideBottomRight", fill: "#991b1b", fontSize: 12 }} />
+                  <ReferenceLine y={metas.meta2 * 100} stroke="#b45309" strokeWidth={2} strokeDasharray="4 4" label={{ value: "Meta2", position: "insideBottomRight", fill: "#b45309", fontSize: 12 }} />
+                  <ReferenceLine y={metas.meta3 * 100} stroke="#ca8a04" strokeWidth={2} strokeDasharray="4 4" label={{ value: "Meta3", position: "insideBottomRight", fill: "#ca8a04", fontSize: 12 }} />
                 </>
               )}
 
