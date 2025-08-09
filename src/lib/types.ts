@@ -32,7 +32,9 @@ export interface IdentificationData {
   descricao: string; // Assumindo que a coluna do texto se chama 'descricao'
   lat: number;
   long: number;
-  // Adicione outros campos que a sua API envia, se necessário
+  nome: string;
+  municipio: string;
+  url_imagem: string;
 }
 
 export interface OngoingAction {
