@@ -47,10 +47,9 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 <Link
                   href="/"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    isActive("/") ? "bg-muted text-primary" : "text-muted-foreground"
-                  }`}
+                    isActive("/") ? "bg-muted text-primary" : "text-muted-foreground"} ${isCollapsed ? 'justify-center' : 'gap-3'} `}
                 >
-                  <Home className="h-4 w-4" />
+                  <Home className="h-4 w-4 flex-shrink-0" />
                   {!isCollapsed && <span>Identificação</span>}
                 </Link>
               </TooltipTrigger>
@@ -64,10 +63,9 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 <Link
                   href="/balanco-hidrico"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    isActive("/balanco-hidrico") ? "bg-muted text-primary" : "text-muted-foreground"
-                  }`}
+                    isActive("/balanco-hidrico") ? "bg-muted text-primary" : "text-muted-foreground"} ${isCollapsed ? 'justify-center' : 'gap-3'}`}
                 >
-                  <Scale className="h-4 w-4" />
+                  <Scale className="h-4 w-4 flex-shrink-0" />
                   {!isCollapsed && <span>Balanço Hídrico</span>}
                 </Link>
               </TooltipTrigger>
@@ -79,10 +77,10 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 <Link
                   href="/estado-de-seca"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    isActive("/estado-de-seca") ? "bg-muted text-primary" : "text-muted-foreground"
+                    isActive("/estado-de-seca") ? "bg-muted text-primary" : "text-muted-foreground" } ${isCollapsed ? 'justify-center' : 'gap-3'
                   }`}
                 >
-                  <Activity className="h-4 w-4" />
+                  <Activity className="h-4 w-4 flex-shrink-0" />
                   {!isCollapsed && <span>Estado de Seca</span>}
                 </Link>
               </TooltipTrigger>
@@ -94,10 +92,10 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 <Link
                   href="/planos-de-acao"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    isActive("/planos-de-acao") ? "bg-muted text-primary" : "text-muted-foreground"
+                    isActive("/planos-de-acao") ? "bg-muted text-primary" : "text-muted-foreground" } ${isCollapsed ? 'justify-center' : 'gap-3'
                   }`}
                 >
-                  <ListChecks className="h-4 w-4" />
+                  <ListChecks className="h-4 w-4 flex-shrink-0" />
                   {!isCollapsed && <span>Planos de Ação</span>}
                 </Link>
               </TooltipTrigger>
@@ -109,10 +107,9 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 <Link
                   href="/impactos"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    isActive("/impactos") ? "bg-muted text-primary" : "text-muted-foreground"
-                  }`}
+                    isActive("/impactos") ? "bg-muted text-primary" : "text-muted-foreground" } ${isCollapsed ? 'justify-center' : 'gap-3'}`}
                 >
-                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTriangle className="h-4 w-4 flex-shrink-0" />
                   {!isCollapsed && <span>Impactos</span>}
                 </Link>
               </TooltipTrigger>
@@ -124,10 +121,10 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 <Link
                   href="/usos-agua"
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
-                    isActive("/usos-agua") ? "bg-muted text-primary" : "text-muted-foreground"
+                    isActive("/usos-agua") ? "bg-muted text-primary" : "text-muted-foreground" } ${isCollapsed ? 'justify-center' : 'gap-3'
                   }`}
                 >
-                  <Users className="h-4 w-4" />
+                  <Users className="h-4 w-4 flex-shrink-0" />
                   {!isCollapsed && <span>Usos da Água</span>}
                 </Link>
               </TooltipTrigger>
@@ -135,10 +132,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
             </Tooltip>
             
           </nav>
-        </TooltipProvider>
-
-        {/* O BOTÃO QUE ESTAVA AQUI FOI REMOVIDO */}
-        
+        </TooltipProvider>        
       </div>
     </aside>
   );
