@@ -35,12 +35,13 @@ export interface IdentificationData {
   nome: string;
   municipio: string;
   url_imagem: string;
+  url_imagem_usos: string | null;
 }
 
 export interface OngoingAction {
-  'AÇÕES': string;
-  'RESPONSÁVEIS': string;
-  'SITUAÇÃO': string;
+  AÇÕES: string;
+  RESPONSÁVEIS: string;
+  SITUAÇÃO: string;
 }
 
 export interface WaterBalanceSummary {
@@ -55,10 +56,10 @@ export interface HistoricalDataPoint {
 }
 
 export interface TriggerData {
-  'Mês': string;
-  'Gatilho para ALERTA (Abaixo de)': number;
-  'Gatilho para SECA (Abaixo de)': number;
-  'Gatilho para SECA SEVERA (Abaixo de)': number;
+  Mês: string;
+  "Gatilho para ALERTA (Abaixo de)": number;
+  "Gatilho para SECA (Abaixo de)": number;
+  "Gatilho para SECA SEVERA (Abaixo de)": number;
 }
 
 export interface UsageAnalysisItem {
@@ -71,4 +72,3 @@ export interface WaterUsageAnalysis {
   estado_atual: string;
   analise_de_uso: UsageAnalysisItem[];
 }
-
