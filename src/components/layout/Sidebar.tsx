@@ -55,9 +55,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right">Identificação</TooltipContent>
             </Tooltip>
-            
-            {/* (O resto dos seus links <Tooltip> continuam aqui, sem alterações) */}
-            
+                        
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
