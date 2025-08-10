@@ -107,7 +107,7 @@ export default async function EstadoDeSecaPage() {
     );
   }
 
-  const recentHistory = history.slice(0, 5);
+  const recentHistory = history.slice(0, 8);
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
@@ -125,7 +125,7 @@ export default async function EstadoDeSecaPage() {
           <CardHeader>
             <CardTitle>Histórico Recente</CardTitle>
             <CardDescription>
-              Os 5 registros mais recentes do sistema.
+              Os 8 registros mais recentes do sistema.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -33,7 +33,8 @@ async function getUsosAguaData(): Promise<UsoAguaData[] | null> {
     const response = await fetch("http://127.0.0.1:8000/api/usos-agua", {
       cache: "no-store",
     });
-    if (!response.ok) throw new Error(`API de Usos respondeu com status: ${response.status}`);
+    if (!response.ok)
+      throw new Error(`API de Usos respondeu com status: ${response.status}`);
     return await response.json();
   } catch (err: any) {
     console.error("Erro ao buscar dados de usos da água:", err.message);
@@ -47,14 +48,16 @@ async function getIdentificationData(): Promise<IdentificationData | null> {
     const response = await fetch("http://127.0.0.1:8000/api/identification", {
       cache: "no-store",
     });
-    if (!response.ok) throw new Error(`API de Identificação respondeu com status: ${response.status}`);
+    if (!response.ok)
+      throw new Error(
+        `API de Identificação respondeu com status: ${response.status}`
+      );
     return await response.json();
   } catch (err: any) {
     console.error("Erro ao buscar dados de identificação:", err.message);
     return null;
   }
 }
-
 
 // --- Componente da Página ---
 
@@ -86,22 +89,15 @@ export default async function UsosAguaPage() {
           Análise de Uso da Água
         </h1>
       </div>
-      
-      {/* Grid para organizar o conteúdo lado a lado em telas maiores */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-        {/* Coluna do Gráfico (ocupando 3/5 do espaço) */}
-        <div className="lg:col-span-3">
-          <UsoAguaChart data={chartData} />
-        </div>
-
-        {/* Coluna da Imagem e Descrição (ocupando 2/5 do espaço) */}
-        <div className="lg:col-span-2">
-          <Card className="w-full shadow-lg">
+      <div>
+        <div className="">
+          <Card className="w-full shadow-lg mb-5">
             <CardHeader>
               <CardTitle className="text-lg">Diagrama de Usos</CardTitle>
               <CardDescription>
-                Representação visual dos principais usos da água no hidrossistema Patu.
+                Representação visual dos principais usos da água no
+                hidrossistema Patu.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -111,7 +107,7 @@ export default async function UsosAguaPage() {
                     src={identificationData.url_imagem_usos}
                     alt="Diagrama de usos da água do açude Patu"
                     layout="fill"
-                    objectFit="contain" // Garante que a imagem caiba sem distorcer
+                    objectFit="contain"
                     className="rounded-md"
                   />
                 </div>
@@ -123,6 +119,13 @@ export default async function UsosAguaPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Coluna do Gráfico (ocupando 3/5 do espaço) */}
+        <div className="">
+          <UsoAguaChart data={chartData} />
+        </div>
+
+        {/* Coluna da Imagem e Descrição (ocupando 2/5 do espaço) */}
       </div>
     </main>
   );

@@ -117,7 +117,7 @@ export default async function ImpactosPage() {
             <h2 className="text-xl font-semibold">Principais Impactos</h2>
             <ImpactCircle />
             <Button size="lg" asChild className="mt-8 w-full max-w-xs">
-                <Link href="#"> 
+                <Link href="https://cepas.ufc.br/pt_br/avaliacao-de-impacto-das-secas/" target="_blank"> 
                     Acesse o formulário aqui
                     <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
