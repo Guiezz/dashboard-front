@@ -33,9 +33,9 @@ export function BalancoHidricoChart({ data }: Props) {
   return (
     <Card className="w-full shadow-lg">
       <CardHeader>
-        <CardTitle className="text-lg">Balanço Hídrico (Q90)</CardTitle>
+        <CardTitle className="text-lg">Afluência Mensal</CardTitle>
         <CardDescription>
-          Balanço hídrico mensal considerando a oferta com 90% de garantia.
+          Vazão de água mensal que chega ao reservatório em determinado mês.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -73,19 +73,6 @@ export function BalancoHidricoChart({ data }: Props) {
                 stackId="a"
                 fill="#60a5fa"
                 name="Afluência (Entrada)"
-              />
-              <Bar
-                dataKey="Evaporação (m³/s)"
-                stackId="a"
-                fill="#facc15"
-                name="Evaporação"
-              />
-              <Bar
-                dataKey="Demanda (m³/s)"
-                stackId="a"
-                fill="#f87171"
-                name="Demanda (Saída)"
-                radius={[6, 6, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>
