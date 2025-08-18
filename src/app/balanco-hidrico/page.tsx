@@ -49,10 +49,10 @@ export default function BalancoHidricoPage() {
 
   return (
     <div className="  px-2 md:px-6 lg:px-8 py-8 space-y-6">
-      <BalancoHidricoChart data={chartData.balancoMensal} />
+      <OfertaDemandaChart data={chartData.ofertaDemanda} />
       <div className="grid gap-6 md:grid-cols-2">
         <ComposicaoDemandaChart data={chartData.composicaoDemanda} />
-        <OfertaDemandaChart data={chartData.ofertaDemanda} />
+        <BalancoHidricoChart data={chartData.balancoMensal} />
       </div>
     </div>
   );
