@@ -1,5 +1,10 @@
 // src/app/usos-agua/page.tsx
 
+"use client"; // 1. Converter para Client Component
+
+import { useState, useEffect } from "react";
+import { useReservoir } from "@/context/ReservoirContext"; // 2. Importar o hook do contexto
+import { UsoAgua, IdentificationData } from "@/lib/types"; // 3. Usar os tipos globais
 import { UsoAguaChart } from "@/components/usos/UsoAguaChart";
 import {
   Card,
@@ -8,85 +13,98 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Image from "next/image"; // Usamos o componente otimizado de imagem do Next.js
+import Image from "next/image";
+import { Loader2 } from "lucide-react";
 
-// --- Interfaces de Dados ---
-interface UsoAguaData {
-  uso: string;
-  vazao_normal: number;
-  vazao_escassez: number;
-}
+const API_BASE_URL = "http://localhost:8000/api/reservatorios";
 
-interface IdentificationData {
-  descricao: string;
-  lat: number;
-  long: number;
-  url_imagem: string | null;
-  url_imagem_usos: string | null;
-}
+// Nota: A API em /usos-agua retorna um schema que pode ser diferente do que o gráfico espera.
+// Se necessário, você pode precisar transformar os dados aqui.
+// Por enquanto, vamos assumir que o componente do gráfico aceita o tipo 'UsoAgua'.
+// Se o seu componente 'UsoAguaChart' espera 'vazao_normal' e 'vazao_escassez',
+// você deve ajustar o tipo 'UsoAgua' em lib/types.ts para incluir esses campos.
 
-// --- Funções para Buscar Dados da API ---
+export default function UsosAguaPage() {
+  // 4. Usar o contexto para obter o reservatório selecionado
+  const { selectedReservoir } = useReservoir();
 
-// Função 1: Busca os dados para o gráfico
-async function getUsosAguaData(): Promise<UsoAguaData[] | null> {
-  try {
-    const response = await fetch("http://127.0.0.1:8000/api/usos-agua", {
-      cache: "no-store",
-    });
-    if (!response.ok)
-      throw new Error(`API de Usos respondeu com status: ${response.status}`);
-    return await response.json();
-  } catch (err: any) {
-    console.error("Erro ao buscar dados de usos da água:", err.message);
-    return null;
+  // 5. Gerenciar o estado para os dois conjuntos de dados, carregamento e erro
+  const [chartData, setChartData] = useState<UsoAgua[]>([]);
+  const [identificationData, setIdentificationData] = useState<IdentificationData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 6. Efeito que busca ambos os dados em paralelo quando o reservatório muda
+  useEffect(() => {
+    if (!selectedReservoir) {
+      setIsLoading(true);
+      return;
+    }
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const id = selectedReservoir.id;
+        // Busca os dois dados em paralelo para mais performance
+        const [usosRes, idRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/${id}/usos-agua`),
+          fetch(`${API_BASE_URL}/${id}/identification`),
+        ]);
+
+        if (!usosRes.ok || !idRes.ok) {
+          throw new Error("Falha ao buscar os dados da página de Usos da Água.");
+        }
+
+        const usosData: UsoAgua[] = await usosRes.json();
+        const idData: IdentificationData = await idRes.json();
+        
+        setChartData(usosData);
+        setIdentificationData(idData);
+
+      } catch (err) {
+        console.error(err);
+        setError(err instanceof Error ? err.message : "Ocorreu um erro desconhecido.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedReservoir]); // A dependência garante a re-execução da busca
+
+  // 7. Renderizar estado de carregamento
+  if (isLoading) {
+    return (
+        <main className="flex flex-1 items-center justify-center">
+            <div className="flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <p className="text-muted-foreground">Carregando dados de usos da água...</p>
+            </div>
+        </main>
+    );
   }
-}
 
-// Função 2: Busca os dados de identificação (para obter o link da imagem)
-async function getIdentificationData(): Promise<IdentificationData | null> {
-  try {
-    const response = await fetch("http://127.0.0.1:8000/api/identification", {
-      cache: "no-store",
-    });
-    if (!response.ok)
-      throw new Error(
-        `API de Identificação respondeu com status: ${response.status}`
-      );
-    return await response.json();
-  } catch (err: any) {
-    console.error("Erro ao buscar dados de identificação:", err.message);
-    return null;
-  }
-}
-
-// --- Componente da Página ---
-
-export default async function UsosAguaPage() {
-  // Usamos Promise.all para buscar os dois conjuntos de dados em paralelo
-  const [chartData, identificationData] = await Promise.all([
-    getUsosAguaData(),
-    getIdentificationData(),
-  ]);
-
-  // Se qualquer uma das buscas falhar, mostramos uma mensagem de erro
-  if (!chartData || !identificationData) {
+  // 8. Renderizar estado de erro
+  if (error || !chartData || !identificationData) {
     return (
       <main className="flex flex-1 items-center justify-center p-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-500">
             Erro ao carregar os dados da página.
           </h1>
-          <p>Verifique o terminal para mais detalhes sobre o erro da API.</p>
+          <p>{error || "Verifique o console para mais detalhes."}</p>
         </div>
       </main>
     );
   }
 
+  // O JSX principal agora usa os dados do estado
   return (
     <main className="p-4 md:p-8 lg:p-10">
       <div className="flex items-center mb-6">
         <h1 className="text-lg font-semibold md:text-2xl">
-          Análise de Uso da Água
+          Análise de Uso da Água: {identificationData.nome}
         </h1>
       </div>
 
@@ -102,7 +120,7 @@ export default async function UsosAguaPage() {
             </CardHeader>
             <CardContent>
               {identificationData.url_imagem_usos ? (
-                <div className="relative w-full h-96">
+                <div className="relative w-full h-120">
                   <Image
                     src={identificationData.url_imagem_usos}
                     alt="Diagrama de usos da água do açude Patu"
@@ -119,13 +137,8 @@ export default async function UsosAguaPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Coluna do Gráfico (ocupando 3/5 do espaço) */}
-        <div className="">
-          <UsoAguaChart data={chartData} />
-        </div>
-
-        {/* Coluna da Imagem e Descrição (ocupando 2/5 do espaço) */}
+        
+        <UsoAguaChart data={chartData} />
       </div>
     </main>
   );

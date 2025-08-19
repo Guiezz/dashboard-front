@@ -117,11 +117,9 @@ export interface OfertaDemanda {
 
 // NOVO: Para a página de Usos da Água
 export interface UsoAgua {
-  // Ajuste os campos conforme o seu schema do banco de dados (models.UsoAgua)
-  id: number;
-  tipo_uso: string;
-  descricao: string;
-  vazao_outorgada_ls: number;
+  uso: string;
+  vazao_normal: number;
+  vazao_escassez: number;
 }
 
 // NOVO: Para a página de Responsáveis

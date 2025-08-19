@@ -1,7 +1,7 @@
 // src/components/usos/UsoAguaChart.tsx
-
 "use client";
 
+import { UsoAgua } from "@/lib/types"; // 1. Importe o tipo unificado
 import {
   Card,
   CardContent,
@@ -20,15 +20,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Interface para definir a estrutura dos dados que o gráfico espera
-interface UsoAguaData {
-  uso: string;
-  vazao_normal: number;
-  vazao_escassez: number;
-}
-
 interface Props {
-  data: UsoAguaData[];
+  data: UsoAgua[];
 }
 
 export function UsoAguaChart({ data }: Props) {
