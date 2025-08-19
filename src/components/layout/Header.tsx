@@ -24,6 +24,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { ThemeToggle } from "./ThemeToggle";
+import { ReservoirSelector } from "./ReservoirSelector";
 
 // Props para controle da Sidebar
 interface HeaderProps {
@@ -118,6 +119,7 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
 
       {/* Ações do lado direito */}
       <div className="flex items-center gap-4">
+        <ReservoirSelector />
         <ThemeToggle />
       </div>
     </header>

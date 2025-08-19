@@ -1,13 +1,13 @@
 // src/app/layout.tsx
-"use client"; // Necessário para usar useState e ThemeProvider
+"use client"; 
 
 import { useState } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
-
 import { ThemeProvider } from "@/components/theme-provider";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { ReservoirProvider } from "@/context/ReservoirContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,18 +27,18 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <div className="flex min-h-screen w-full">
-            {/* Sidebar com controle de colapso */}
-            <Sidebar isCollapsed={isCollapsed} />
-
-            <div className="flex flex-col flex-1 w-full">
-              {/* Header controlando a Sidebar */}
-              <Header isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-              <main className="flex-1 p-4 sm:px-6 sm:py-0 md:gap-8">
-                {children}
-              </main>
+          <ReservoirProvider>
+            <div className="flex min-h-screen w-full">
+              <Sidebar isCollapsed={isCollapsed} />
+              
+              <div className="flex flex-1 flex-col">
+                <Header isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+                <main className="flex-1 overflow-auto p-4 sm:px-6 sm:py-4">
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
+          </ReservoirProvider>
         </ThemeProvider>
       </body>
     </html>

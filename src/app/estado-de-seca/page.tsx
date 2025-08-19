@@ -1,13 +1,17 @@
-// src/app/estado-de-seca/page.tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import { useReservoir } from "@/context/ReservoirContext";
+
+// Importe seus tipos e componentes como antes
 import {
   DashboardSummary,
   HistoryEntry,
   ChartDataPoint,
-  OngoingAction,
+  ActionStatus,
 } from "@/lib/types";
 import { VolumeChart } from "@/components/dashboard/VolumeChart";
 import { MetricCards } from "@/components/dashboard/MetricCards";
-import { PaginatedTableAcoes } from "@/components/dashboard/PaginatedTableAcoes";
 import { PaginatedTableMedidas } from "@/components/dashboard/PaginatedTableMedidas";
 import {
   Card,
@@ -27,93 +31,99 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ActionStatusTabs } from "@/components/dashboard/ActionStatusTabs";
 
-async function getDashboardData() {
-  const API_BASE_URL = "http://localhost:8000";
-  try {
-    const [summaryRes, historyRes, chartRes] = await Promise.all([
-      fetch(`${API_BASE_URL}/api/dashboard/summary`, { cache: "no-store" }),
-      fetch(`${API_BASE_URL}/api/history`, { cache: "no-store" }),
-      fetch(`${API_BASE_URL}/api/chart/volume-data`, { cache: "no-store" }),
-    ]);
-    if (!summaryRes.ok || !historyRes.ok || !chartRes.ok)
-      throw new Error("Falha ao buscar dados do dashboard");
-    const summary: DashboardSummary = await summaryRes.json();
-    const history: HistoryEntry[] = await historyRes.json();
-    const chart: ChartDataPoint[] = await chartRes.json();
-    return { summary, history, chart };
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
+const API_BASE_URL = "http://localhost:8000/api/reservatorios";
 
-async function getOngoingActions(): Promise<OngoingAction[] | null> {
-  const API_BASE_URL = "http://localhost:8000";
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/ongoing-actions`, {
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("Falha ao buscar ações em andamento");
-    const data = await res.json();
-    if (data.error) {
-      console.error("API error for ongoing actions:", data.error);
-      return [];
+export default function EstadoDeSecaPage() {
+  // 3. Usar o contexto para obter o reservatório selecionado
+  const { selectedReservoir, isLoading: isReservoirLoading } = useReservoir();
+
+  // 4. Gerenciar o estado dos dados da página (loading, data, error)
+  const [isLoadingPage, setIsLoadingPage] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [chart, setChart] = useState<ChartDataPoint[]>([]);
+const [ongoingActions, setOngoingActions] = useState<ActionStatus[]>([]);
+const [completedActions, setCompletedActions] = useState<ActionStatus[]>([]);
+
+  // 5. Efeito que busca os dados sempre que o reservatório selecionado mudar
+  useEffect(() => {
+    // Se não houver reservatório selecionado, não faz nada
+    if (!selectedReservoir) {
+      setIsLoadingPage(isReservoirLoading);
+      return;
     }
-    return data;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
 
-// Adicionando a função para buscar ações concluídas
-async function getCompletedActions(): Promise<OngoingAction[] | null> {
-  const API_BASE_URL = "http://localhost:8000";
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/completed-actions`, { cache: "no-store" });
-    if (!res.ok) throw new Error("Falha ao buscar ações concluídas");
-    const data = await res.json();
-    if (data.error) {
-        console.error("API error for completed actions:", data.error);
-        return [];
-    }
-    return data;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
+    const fetchDataForReservoir = async () => {
+      setIsLoadingPage(true);
+      setError(null);
+      const id = selectedReservoir.id;
 
+      try {
+        const [summaryRes, historyRes, chartRes, ongoingRes, completedRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/${id}/dashboard/summary`, { cache: "no-store" }),
+          fetch(`${API_BASE_URL}/${id}/history`, { cache: "no-store" }),
+          fetch(`${API_BASE_URL}/${id}/chart/volume-data`, { cache: "no-store" }),
+          fetch(`${API_BASE_URL}/${id}/ongoing-actions`, { cache: "no-store" }),
+          fetch(`${API_BASE_URL}/${id}/completed-actions`, { cache: "no-store" }),
+        ]);
 
-export default async function EstadoDeSecaPage() {
-  const [dashboardData, ongoingActions, completedActions] = await Promise.all([
-    getDashboardData(),
-    getOngoingActions(),
-    getCompletedActions(),
-  ]);
+        if (!summaryRes.ok || !historyRes.ok || !chartRes.ok || !ongoingRes.ok || !completedRes.ok) {
+          throw new Error("Falha ao buscar os dados do reservatório.");
+        }
 
-  const { summary, history, chart } = dashboardData || {};
+        // Atualiza os estados com os novos dados
+        setSummary(await summaryRes.json());
+        setHistory(await historyRes.json());
+        setChart(await chartRes.json());
+        setOngoingActions(await ongoingRes.json());
+        setCompletedActions(await completedRes.json());
 
-  if (!summary || !history || !chart || ongoingActions === null || completedActions === null) {
+      } catch (err) {
+        console.error(err);
+        setError(err instanceof Error ? err.message : "Ocorreu um erro desconhecido.");
+      } finally {
+        setIsLoadingPage(false);
+      }
+    };
+
+    fetchDataForReservoir();
+  }, [selectedReservoir]); // A mágica acontece aqui: o hook re-executa quando `selectedReservoir` muda
+
+  // 6. Renderizar estados de loading e erro
+  if (isLoadingPage) {
     return (
       <main className="flex flex-1 items-center justify-center p-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-500">
-            Erro ao carregar os dados da página.
-          </h1>
-          <p>Verifique se a API Python está em execução.</p>
+          <h1 className="text-2xl font-bold">Carregando dados do reservatório...</h1>
         </div>
       </main>
     );
   }
 
+  if (error || !summary) {
+    return (
+      <main className="flex flex-1 items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-500">
+            Erro ao carregar os dados.
+          </h1>
+          <p>{error || "Verifique se a API está em execução e tente novamente."}</p>
+        </div>
+      </main>
+    );
+  }
+  
   const recentHistory = history.slice(0, 8);
 
+  // 7. Renderizar o conteúdo da página com os dados do estado
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">
-          Dashboard de Estado de Seca
+          {/* Título dinâmico com o nome do reservatório */}
+          Dashboard: {selectedReservoir?.nome}
         </h1>
       </div>
       <MetricCards summary={summary} />
@@ -129,7 +139,6 @@ export default async function EstadoDeSecaPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* --- CÓDIGO DO HISTÓRICO REINSERIDO AQUI --- */}
             <Table>
               <TableHeader>
                 <TableRow>
@@ -139,8 +148,8 @@ export default async function EstadoDeSecaPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentHistory.map((entry) => (
-                  <TableRow key={entry.Data}>
+                {recentHistory.map((entry, index) => (
+                  <TableRow key={`${entry.Data}-${index}`}>
                     <TableCell>{entry.Data}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{entry["Estado de Seca"]}</Badge>
@@ -155,8 +164,6 @@ export default async function EstadoDeSecaPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Medidas e Ações com paginação */}
       <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
         <PaginatedTableMedidas
           data={summary.medidasRecomendadas}
