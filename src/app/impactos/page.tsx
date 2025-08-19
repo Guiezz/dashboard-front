@@ -1,93 +1,78 @@
 // src/app/impactos/page.tsx
 
+"use client"; // 1. Converter para Client Component
+
+import { useState, useEffect } from "react";
+import { useReservoir } from "@/context/ReservoirContext"; // 2. Importar o hook do contexto
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  Droplets,
-  Leaf,
-  BarChart3,
-  Users,
-  AlertTriangle,
-} from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { IdentificationData } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 
-// Função para buscar os dados de identificação (nome do reservatório e município)
-async function getIdentificationData(): Promise<IdentificationData | null> {
-  const API_BASE_URL = "http://localhost:8000";
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/identification`, {
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("Falha ao buscar dados de identificação");
-    return await res.json();
-  } catch (error) {
-    console.error(error);
-    return null;
+const API_BASE_URL = "http://localhost:8000/api/reservatorios";
+
+export default function ImpactosPage() {
+  // 3. Usar o contexto para obter o reservatório selecionado
+  const { selectedReservoir } = useReservoir();
+
+  // 4. Gerenciar o estado dos dados, carregamento e erro
+  const [identificationData, setIdentificationData] = useState<IdentificationData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 5. Efeito que busca os dados quando o reservatório muda
+  useEffect(() => {
+    if (!selectedReservoir) {
+      setIsLoading(true);
+      return;
+    }
+
+    const getIdentificationData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`${API_BASE_URL}/${selectedReservoir.id}/identification`, {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("Falha ao buscar dados de identificação");
+        setIdentificationData(await res.json());
+      } catch (err) {
+        console.error(err);
+        setError(err instanceof Error ? err.message : "Ocorreu um erro desconhecido.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getIdentificationData();
+  }, [selectedReservoir]);
+
+  // 6. Renderizar estados de carregamento e erro
+  if (isLoading) {
+    return (
+      <main className="flex flex-1 items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </main>
+    );
   }
-}
 
-// O componente do "gráfico" visual de impactos
-function ImpactCircle() {
-  const impacts = [
-    {
-      name: "Provisão de Água",
-      icon: <Droplets className="h-6 w-6" />,
-      color: "text-blue-400",
-    },
-    {
-      name: "Impactos Econômicos",
-      icon: <BarChart3 className="h-6 w-6" />,
-      color: "text-yellow-400",
-    },
-    {
-      name: "Desafios Sociais",
-      icon: <Users className="h-6 w-6" />,
-      color: "text-red-400",
-    },
-    {
-      name: "Consequências Ambientais",
-      icon: <Leaf className="h-6 w-6" />,
-      color: "text-green-400",
-    },
-  ];
-
-  return (
-    <div className="relative w-64 h-64 flex items-center justify-center">
-      {/* Círculo central */}
-      <div className="absolute w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center">
-        <AlertTriangle className="h-12 w-12 text-primary" />
-      </div>
-      {/* Ícones em órbita */}
-      {impacts.map((impact, index) => {
-        const angle = (index / impacts.length) * 2 * Math.PI - Math.PI / 2;
-        const x = Math.cos(angle) * 96; // 96 é o raio da órbita
-        const y = Math.sin(angle) * 96;
-        return (
-          <div
-            key={impact.name}
-            className="absolute flex flex-col items-center text-center"
-            style={{ transform: `translate(${x}px, ${y}px)` }}
-          >
-            <div className={`p-2 bg-background rounded-full ${impact.color}`}>
-              {impact.icon}
+  if (error) {
+    return (
+        <main className="flex flex-1 items-center justify-center p-4">
+            <div className="text-center">
+                <h1 className="text-2xl font-bold text-red-500">Erro ao carregar os dados.</h1>
+                <p>{error}</p>
             </div>
-            <span className="text-xs mt-1 font-medium max-w-[80px]">
-              {impact.name}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+        </main>
+    );
+  }
 
-export default async function ImpactosPage() {
-  const identificationData = await getIdentificationData();
-
-  // Nomes dinâmicos com valores padrão em caso de falha na API
+  // 7. Usar os dados do estado para preencher o texto dinâmico
   const nomeReservatorio = identificationData?.nome || "O Hidrossistema";
   const nomeMunicipio = identificationData?.municipio || "na região";
 
@@ -161,8 +146,9 @@ export default async function ImpactosPage() {
             <Image
               src="/infografico/infografico.png"
               alt="Infográfico dos Principais Impactos"
-              layout="fill"
-              objectFit="contain"
+              fill
+              style={{ objectFit: 'contain' }}
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
           <Button size="lg" asChild className="mt-8 w-full max-w-xs">
