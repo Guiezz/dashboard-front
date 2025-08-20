@@ -1,59 +1,85 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useReservoir } from "@/context/ReservoirContext"; // 1. Importar o hook do contexto
+import { StaticWaterBalanceCharts } from "@/lib/types"; // 2. Usar o tipo global
 import { BalancoHidricoChart } from "@/components/balance/BalancoHidricoChart";
 import { ComposicaoDemandaChart } from "@/components/balance/ComposicaoDemandaChart";
 import { OfertaDemandaChart } from "@/components/balance/OfertaDemandaChart";
+import { Loader2 } from "lucide-react";
 
-interface StaticChartData {
-  balancoMensal: any[];
-  composicaoDemanda: any[];
-  ofertaDemanda: any[];
-}
+const API_BASE_URL = "http://localhost:8000/api/reservatorios";
 
 export default function BalancoHidricoPage() {
-  const [chartData, setChartData] = useState<StaticChartData | null>(null);
+  // 3. Usar o contexto para obter o reservatório
+  const { selectedReservoir } = useReservoir();
+
+  // 4. Gerenciar o estado com o tipo global
+  const [chartData, setChartData] = useState<StaticWaterBalanceCharts | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 5. Efeito que busca os dados quando o reservatório muda
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch(
-          "http://127.0.0.1:8000/api/water-balance/static-charts"
-        );
-        if (!response.ok) {
-          throw new Error("Falha ao buscar dados da API");
-        }
-        const data = await response.json();
-        if (data.error) {
-          throw new Error(data.error);
-        }
-        setChartData(data);
-      } catch (err: any) {
-        setError(err.message);
-      }
+    if (!selectedReservoir) {
+      setIsLoading(true);
+      return;
     }
 
-    fetchData();
-  }, []);
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // 6. URL agora é dinâmica
+        const response = await fetch(
+          `${API_BASE_URL}/${selectedReservoir.id}/water-balance/static-charts`
+        );
+        if (!response.ok) {
+          throw new Error("Falha ao buscar dados da API do Balanço Hídrico");
+        }
+        setChartData(await response.json());
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  if (error) {
+    fetchData();
+  }, [selectedReservoir]); // 7. A dependência garante a re-execução
+
+  // 8. Renderizar estados de carregamento e erro
+  if (isLoading) {
     return (
-      <div className="text-red-500 p-4">Erro ao carregar dados: {error}</div>
+      <main className="flex flex-1 items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">Carregando dados do balanço hídrico...</p>
+        </div>
+      </main>
     );
   }
 
-  if (!chartData) {
-    return <div className="p-4">Carregando dados dos gráficos...</div>;
+  if (error || !chartData) {
+    return (
+      <div className="flex flex-1 items-center justify-center text-red-500 p-4">
+        Erro ao carregar dados: {error || "Nenhum dado retornado."}
+      </div>
+    );
   }
 
   return (
-    <div className="  px-2 md:px-6 lg:px-8 py-8 space-y-6">
+    <main className="px-2 md:px-6 lg:px-8 py-8 space-y-8">
+       <div className="flex items-center">
+        <h1 className="text-lg font-semibold md:text-2xl">
+          Balanço Hídrico: {selectedReservoir?.nome}
+        </h1>
+      </div>
       <OfertaDemandaChart data={chartData.ofertaDemanda} />
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-8 md:grid-cols-2">
         <ComposicaoDemandaChart data={chartData.composicaoDemanda} />
         <BalancoHidricoChart data={chartData.balancoMensal} />
       </div>
-    </div>
+    </main>
   );
 }

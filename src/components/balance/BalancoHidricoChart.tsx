@@ -18,15 +18,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-interface BalancoMensalData {
-  Mês: string;
-  "Afluência (m³/s)": number;
-  "Evaporação (m³/s)": number;
-  "Demanda (m³/s)": number;
-}
+import { BalancoMensal } from "@/lib/types";
 
 interface Props {
-  data: BalancoMensalData[];
+  data: BalancoMensal[];
 }
 
 export function BalancoHidricoChart({ data }: Props) {

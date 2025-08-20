@@ -15,14 +15,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-
-interface ComposicaoData {
-  Uso: string;
-  "Vazão (L/s)": number;
-}
+import { ComposicaoDemanda } from "@/lib/types";
 
 interface Props {
-  data: ComposicaoData[];
+  data: ComposicaoDemanda[];
 }
 
 const COLORS = [

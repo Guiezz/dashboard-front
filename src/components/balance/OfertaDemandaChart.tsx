@@ -17,15 +17,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-
-interface OfertaData {
-  Cenário: string;
-  "Oferta (L/s)": number;
-  "Demanda (L/s)": number;
-}
+import { OfertaDemanda } from "@/lib/types";
 
 interface Props {
-  data: OfertaData[];
+  data: OfertaDemanda[];
 }
 
 export function OfertaDemandaChart({ data }: Props) {
