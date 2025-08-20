@@ -23,7 +23,7 @@ export function Parceiros() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Instituições Parceiras</CardTitle>
+        <CardTitle>Financiamento e Realização</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-6 pt-6">
         {parceiros.map((linha, idx) => (
