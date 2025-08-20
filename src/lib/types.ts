@@ -80,7 +80,6 @@ export interface ActionPlan {
   "RESPONSÁVEIS": string;
 }
 
-
 // --- TIPOS PARA A PÁGINA DE BALANÇO HÍDRICO ---
 
 // NOVO: Estrutura principal do retorno do endpoint /water-balance/static-charts
@@ -124,10 +123,7 @@ export interface UsoAgua {
 
 // NOVO: Para a página de Responsáveis
 export interface Responsavel {
-  // Ajuste os campos conforme o seu schema do banco de dados (models.Responsavel)
-  id: number;
-  orgao: string;
-  nome_contato: string;
-  email: string;
-  telefone: string;
+  equipa: string;
+  nome: string;
+  // Adicione outros campos se sua API os enviar (ex: email, telefone)
 }
