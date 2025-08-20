@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   Users,
   Droplets,
+  Smile,
 } from "lucide-react";
 
 // A interface não precisa mais do setIsCollapsed, mas podemos manter para o futuro
@@ -124,9 +125,24 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 >
                   <Users className="h-4 w-4 flex-shrink-0" />
                   {!isCollapsed && <span>Usos da Água</span>}
-                </Link>
+                </Link> 
               </TooltipTrigger>
               <TooltipContent side="right">Usos da Água</TooltipContent>
+            </Tooltip>
+
+                        <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="/responsaveis"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
+                    isActive("/responsaveis") ? "bg-muted text-primary" : "text-muted-foreground" } ${isCollapsed ? 'justify-center' : 'gap-3'
+                  }`}
+                >
+                  <Smile className="h-4 w-4 flex-shrink-0" />
+                  {!isCollapsed && <span>Responsáveis</span>}
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Responsáveis</TooltipContent>
             </Tooltip>
             
           </nav>
