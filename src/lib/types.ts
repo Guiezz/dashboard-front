@@ -122,8 +122,9 @@ export interface UsoAgua {
 }
 
 // NOVO: Para a página de Responsáveis
-export interface Responsavel {
-  equipa: string;
+export type Responsavel = {
+  grupo: string | null;
+  organizacao: string | null;
+  cargo: string | null;
   nome: string;
-  // Adicione outros campos se sua API os enviar (ex: email, telefone)
-}
+};

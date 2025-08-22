@@ -30,7 +30,8 @@ export default function UsosAguaPage() {
 
   // 5. Gerenciar o estado para os dois conjuntos de dados, carregamento e erro
   const [chartData, setChartData] = useState<UsoAgua[]>([]);
-  const [identificationData, setIdentificationData] = useState<IdentificationData | null>(null);
+  const [identificationData, setIdentificationData] =
+    useState<IdentificationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,18 +54,21 @@ export default function UsosAguaPage() {
         ]);
 
         if (!usosRes.ok || !idRes.ok) {
-          throw new Error("Falha ao buscar os dados da página de Usos da Água.");
+          throw new Error(
+            "Falha ao buscar os dados da página de Usos da Água."
+          );
         }
 
         const usosData: UsoAgua[] = await usosRes.json();
         const idData: IdentificationData = await idRes.json();
-        
+
         setChartData(usosData);
         setIdentificationData(idData);
-
       } catch (err) {
         console.error(err);
-        setError(err instanceof Error ? err.message : "Ocorreu um erro desconhecido.");
+        setError(
+          err instanceof Error ? err.message : "Ocorreu um erro desconhecido."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -76,12 +80,14 @@ export default function UsosAguaPage() {
   // 7. Renderizar estado de carregamento
   if (isLoading) {
     return (
-        <main className="flex flex-1 items-center justify-center">
-            <div className="flex flex-col items-center gap-2">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <p className="text-muted-foreground">Carregando dados de usos da água...</p>
-            </div>
-        </main>
+      <main className="flex flex-1 items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">
+            Carregando dados de usos da água...
+          </p>
+        </div>
+      </main>
     );
   }
 
@@ -115,7 +121,7 @@ export default function UsosAguaPage() {
               <CardTitle className="text-lg">Diagrama de Usos</CardTitle>
               <CardDescription>
                 Representação visual dos principais usos da água no
-                hidrossistema Patu.
+                hidrossistema {identificationData.nome}.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -123,7 +129,7 @@ export default function UsosAguaPage() {
                 <div className="relative w-full h-120">
                   <Image
                     src={identificationData.url_imagem_usos}
-                    alt="Diagrama de usos da água do açude Patu"
+                    alt={`Diagrama de usos da água do açude ${identificationData.nome}`}
                     layout="fill"
                     objectFit="contain"
                     className="rounded-md"
@@ -137,7 +143,7 @@ export default function UsosAguaPage() {
             </CardContent>
           </Card>
         </div>
-        
+
         <UsoAguaChart data={chartData} />
       </div>
     </main>

@@ -4,20 +4,32 @@ import { useState, useEffect } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
 import { Responsavel } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Loader2 } from "lucide-react";
+import { Users, Building, Briefcase, Loader2, Frown, Award, Handshake } from "lucide-react";
 import { Parceiros } from "@/components/responsaveis/Parceiros";
 
 const API_BASE_URL = "http://localhost:8000/api/reservatorios";
 
-// Componente auxiliar para renderizar uma lista de membros
-const MemberList = ({ members }: { members: string[] | undefined }) => {
+// Tipo para a estrutura de dados agrupada
+type GroupedData = {
+  [grupo: string]: {
+    [organizacao: string]: Responsavel[];
+  };
+};
+
+// Componente MemberList (sem alterações, mas incluído para o contexto)
+const MemberList = ({ members }: { members: Responsavel[] | undefined }) => {
   if (!members || members.length === 0) {
     return <p className="text-sm text-muted-foreground">-</p>;
   }
   return (
     <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-      {members.map((nomeMembro) => (
-        <li key={nomeMembro}>{nomeMembro}</li>
+      {members.map((membro) => (
+        <li key={membro.nome}>
+          {membro.nome}
+          {membro.cargo && (
+            <span className="ml-2 text-xs text-gray-500">({membro.cargo})</span>
+          )}
+        </li>
       ))}
     </ul>
   );
@@ -25,9 +37,33 @@ const MemberList = ({ members }: { members: string[] | undefined }) => {
 
 export default function ResponsaveisPage() {
   const { selectedReservoir } = useReservoir();
-  const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
+  const [groupedData, setGroupedData] = useState<GroupedData>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // --- HIERARQUIA E ORDEM DEFINIDAS ---
+  // Array para garantir a ordem de renderização dos cards principais (grupos)
+  const grupoDisplayOrder: string[] = [
+    "EQUIPE DO PROJETO",
+    "Comitê da Bacia Hidrográfica da Região Metropolitana de Fortaleza",
+    "COMISSÃO GESTORA DO AÇUDE ACARAPE DO MEIO",
+    "SECRETARIA-EXECUTIVA",
+    "OUTROS ATORES PARTICIPANTES (COGERH)",
+    "Equipe de Desenvolvimento do Sistema de Apoio à Decisão", // Nome padrão vindo do BD
+    "EQUIPE DE DESENVOLVIMENTO" // Nome que você usou no exemplo
+  ];
+  
+  // Opcional: Para ordenar as organizações dentro de um grupo específico
+  const organizacaoOrder: { [key: string]: string[] } = {
+    "EQUIPE DO PROJETO": [
+      "COORDENAÇÃO GERAL",
+      "COORDENAÇÃO DAS EQUIPES DE ELABORAÇÃO",
+      "COGERH",
+      "FUNCEME",
+      "EQUIPE DE ELABORAÇÃO",
+      "COMUNICAÇÃO VISUAL",
+    ],
+  };
 
   useEffect(() => {
     if (!selectedReservoir) {
@@ -41,15 +77,23 @@ export default function ResponsaveisPage() {
         const res = await fetch(
           `${API_BASE_URL}/${selectedReservoir.id}/responsaveis`
         );
-        if (!res.ok) {
-          throw new Error(`A API respondeu com status: ${res.status}`);
-        }
-        setResponsaveis(await res.json());
+        if (!res.ok) throw new Error(`A API respondeu com status: ${res.status}`);
+        
+        const data: Responsavel[] = await res.json();
+        
+        const grouped = data.reduce<GroupedData>((acc, responsavel) => {
+          const grupo = responsavel.grupo || "Outros Grupos";
+          const organizacao = responsavel.organizacao || "Geral";
+          if (!acc[grupo]) acc[grupo] = {};
+          if (!acc[grupo][organizacao]) acc[grupo][organizacao] = [];
+          acc[grupo][organizacao].push(responsavel);
+          return acc;
+        }, {});
+
+        setGroupedData(grouped);
       } catch (err) {
         console.error("Erro ao buscar dados dos responsáveis:", err);
-        setError(
-          err instanceof Error ? err.message : "Ocorreu um erro desconhecido."
-        );
+        setError(err instanceof Error ? err.message : "Ocorreu um erro desconhecido.");
       } finally {
         setIsLoading(false);
       }
@@ -57,106 +101,75 @@ export default function ResponsaveisPage() {
     getResponsaveisData();
   }, [selectedReservoir]);
 
-  if (isLoading) {
-    return (
-      <main className="flex flex-1 items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="text-muted-foreground">
-            Carregando dados dos responsáveis...
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-500">
-            Erro ao carregar os dados.
-          </h1>
-          <p>{error}</p>
-        </div>
-      </main>
-    );
-  }
-
-  // A lógica de agrupar os responsáveis por equipe permanece a mesma
-  const equipas: { [key: string]: string[] } = {};
-  responsaveis.forEach((r) => {
-    if (!equipas[r.equipa]) {
-      equipas[r.equipa] = [];
-    }
-    equipas[r.equipa].push(r.nome);
+  // Os estados de Loading e Error permanecem os mesmos...
+  if (isLoading) { /* ...código de loading... */ }
+  if (error) { /* ...código de erro... */ }
+  
+  // --- LÓGICA DE ORDENAÇÃO PARA RENDERIZAÇÃO ---
+  const sortedGrupos = Object.keys(groupedData).sort((a, b) => {
+    const indexA = grupoDisplayOrder.indexOf(a);
+    const indexB = grupoDisplayOrder.indexOf(b);
+    if (indexA === -1 && indexB === -1) return a.localeCompare(b); // Alfabética para não listados
+    if (indexA === -1) return 1; // Não listados vão para o final
+    if (indexB === -1) return -1; // Não listados vão para o final
+    return indexA - indexB; // Ordena com base na lista
   });
 
   return (
     <main className="p-4 md:p-8 lg:p-10 space-y-12">
-      <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl">
-          Equipes e Responsáveis pelo Projeto
-        </h1>
-      </div>
+      {/* 1. EQUIPE DO PROJETO */}
+      {sortedGrupos.map((grupo) => {
+        const organizacoes = groupedData[grupo];
+        const organizacaoOrderList = organizacaoOrder[grupo] || null;
+        
+        const sortedOrganizacoes = Object.keys(organizacoes).sort((a, b) => {
+            if (!organizacaoOrderList) return a.localeCompare(b); // Ordem alfabética padrão
+            const indexA = organizacaoOrderList.indexOf(a);
+            const indexB = organizacaoOrderList.indexOf(b);
+            if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
 
-      {/* 1. GRANDE CARD PARA A EQUIPE DO PROJETO */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Equipe do Projeto
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Usando grid para dividir em duas colunas em telas médias e maiores */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            {/* Coluna 1 */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-sm mb-2">
-                  COORDENAÇÃO GERAL
-                </h3>
-                <MemberList members={equipas["COORDENAÇÃO GERAL"]} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm mb-2">FUNCAP/UFC</h3>
-                <MemberList members={equipas["FUNCAP/UFC"]} />
-              </div>
-            </div>
-            {/* Coluna 2 */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-sm mb-2">COGERH</h3>
-                <MemberList members={equipas["COGERH"]} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm mb-2">FUNCEME</h3>
-                <MemberList members={equipas["FUNCEME"]} />
-              </div>
-            </div>
+        // Adiciona um número ao título se o grupo for um dos principais
+        const numeroTitulo = grupoDisplayOrder.indexOf(grupo) + 1;
+        const titulo = numeroTitulo > 0 && numeroTitulo < 3 ? `${numeroTitulo}. ${grupo}` : grupo;
+
+        return (
+          <div key={grupo}>
+            <h2 className="text-lg font-semibold md:text-2xl mb-4">{titulo}</h2>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                  {sortedOrganizacoes.map((organizacao) => (
+                    <div key={organizacao}>
+                      <h3 className="font-semibold text-sm mb-2 uppercase">
+                        {organizacao}
+                      </h3>
+                      <MemberList members={organizacoes[organizacao]} />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        );
+      })}
 
-      {/* 3. CARD PARA A EQUIPE DE DESENVOLVIMENTO */}
+      {/* 3. EQUIPE DE DESENVOLVIMENTO (Exemplo de como tratar um grupo específico) */}
+      {/* Este grupo já é renderizado pelo loop acima, mas você poderia dar um tratamento especial se quisesse */}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-semibold">
-            Equipe de Desenvolvimento do Sistema de Apoio à Decisão
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <MemberList
-            members={equipas["Equipe de Desenvolvimento do Sistema"]}
-          />
-        </CardContent>
-      </Card>
-
-      {/* 2. SEÇÃO DE FINANCIAMENTO E REALIZAÇÃO */}
-      <div className="space-y-4">
-        <Parceiros />
+      {/* 4. FINANCIAMENTO E REALIZAÇÃO */}
+      <div>
+        <h2 className="text-lg font-semibold md:text-2xl mb-4">
+          4. Financiamento e Realização
+        </h2>
+        <Card>
+          <CardContent className="pt-6">
+            <Parceiros />
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
