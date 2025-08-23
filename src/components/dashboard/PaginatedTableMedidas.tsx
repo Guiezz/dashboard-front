@@ -2,18 +2,18 @@
 "use client";
 
 import { PaginatedTableCard } from "./PaginatedTableCard";
-import { Medida } from "@/lib/types";
+import { MedidaRecomendada } from "@/lib/types";
 import { ShieldCheck } from "lucide-react";
 import { TableRow, TableCell } from "@/components/ui/table";
 
 interface Props {
-  data: Medida[];
+  data: MedidaRecomendada[];
   estado: string;
 }
 
 export function PaginatedTableMedidas({ data, estado }: Props) {
   return (
-    <PaginatedTableCard<Medida>
+    <PaginatedTableCard<MedidaRecomendada>
       icon={<ShieldCheck className="h-5 w-5 text-primary" />}
       title={`Medidas Recomendadas para ${estado}`}
       data={data}

@@ -2,18 +2,18 @@
 "use client";
 
 import { PaginatedTableCard } from "./PaginatedTableCard";
-import { OngoingAction } from "@/lib/types";
+import { ActionStatus } from "@/lib/types";
 import { ListChecks } from "lucide-react";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge"; // 1. Importamos o Badge
 
 interface Props {
-  data: OngoingAction[];
+  data: ActionStatus[];
 }
 
 export function PaginatedTableAcoes({ data }: Props) {
   return (
-    <PaginatedTableCard<OngoingAction>
+    <PaginatedTableCard<ActionStatus>
       icon={<ListChecks className="h-5 w-5 text-primary" />}
       title="Ações em Andamento"
       data={data}

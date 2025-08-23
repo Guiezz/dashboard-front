@@ -43,6 +43,7 @@ export interface MedidaRecomendada {
 export interface HistoryEntry {
   Data: string;
   "Estado de Seca": string;
+  "Volume (%)": number;
   "Volume (Hm³)": number;
 }
 

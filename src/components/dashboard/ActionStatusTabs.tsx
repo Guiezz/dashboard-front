@@ -9,13 +9,14 @@ import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/p
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ListChecks, CheckCircle, Search } from "lucide-react";
+import type { ActionStatus } from "@/lib/types";
 
 interface Props {
-  ongoing: OngoingAction[];
-  completed: OngoingAction[];
+  ongoing: ActionStatus[];
+  completed: ActionStatus[];
 }
 
-function PaginatedTable({ data }: { data: OngoingAction[] }) {
+function PaginatedTable({ data }: { data: ActionStatus[] }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; 
   const totalPages = Math.ceil(data.length / itemsPerPage);

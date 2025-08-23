@@ -37,7 +37,7 @@ export function MetricCards({ summary }: MetricCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{summary.diasDesdeUltimaMudanca} dias</div>
-          <p className="text-xs text-muted-foreground">Desde {summary.dataUltimaMudanca}</p>
+          <p className="text-xs text-muted-foreground">Desde {summary.diasDesdeUltimaMudanca}</p>
         </CardContent>
       </Card>
       <Card>
