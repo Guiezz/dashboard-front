@@ -31,25 +31,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ActionStatusTabs } from "@/components/dashboard/ActionStatusTabs";
 
-const API_BASE_URL = "http://localhost:8000/api/reservatorios";
+// CORREÇÃO: A URL base agora vem da variável de ambiente.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export default function EstadoDeSecaPage() {
-  // 3. Usar o contexto para obter o reservatório selecionado
   const { selectedReservoir, isLoading: isReservoirLoading } = useReservoir();
 
-  // 4. Gerenciar o estado dos dados da página (loading, data, error)
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [chart, setChart] = useState<ChartDataPoint[]>([]);
-const [ongoingActions, setOngoingActions] = useState<ActionStatus[]>([]);
-const [completedActions, setCompletedActions] = useState<ActionStatus[]>([]);
+  const [ongoingActions, setOngoingActions] = useState<ActionStatus[]>([]);
+  const [completedActions, setCompletedActions] = useState<ActionStatus[]>([]);
 
-  // 5. Efeito que busca os dados sempre que o reservatório selecionado mudar
   useEffect(() => {
-    // Se não houver reservatório selecionado, não faz nada
     if (!selectedReservoir) {
       setIsLoadingPage(isReservoirLoading);
       return;
@@ -61,19 +58,19 @@ const [completedActions, setCompletedActions] = useState<ActionStatus[]>([]);
       const id = selectedReservoir.id;
 
       try {
+        // CORREÇÃO: As URLs são construídas dinamicamente com a base correta.
         const [summaryRes, historyRes, chartRes, ongoingRes, completedRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/${id}/dashboard/summary`, { cache: "no-store" }),
-          fetch(`${API_BASE_URL}/${id}/history`, { cache: "no-store" }),
-          fetch(`${API_BASE_URL}/${id}/chart/volume-data`, { cache: "no-store" }),
-          fetch(`${API_BASE_URL}/${id}/ongoing-actions`, { cache: "no-store" }),
-          fetch(`${API_BASE_URL}/${id}/completed-actions`, { cache: "no-store" }),
+          fetch(`${API_BASE_URL}/api/reservatorios/${id}/dashboard/summary`, { cache: "no-store" }),
+          fetch(`${API_BASE_URL}/api/reservatorios/${id}/history`, { cache: "no-store" }),
+          fetch(`${API_BASE_URL}/api/reservatorios/${id}/chart/volume-data`, { cache: "no-store" }),
+          fetch(`${API_BASE_URL}/api/reservatorios/${id}/ongoing-actions`, { cache: "no-store" }),
+          fetch(`${API_BASE_URL}/api/reservatorios/${id}/completed-actions`, { cache: "no-store" }),
         ]);
 
         if (!summaryRes.ok || !historyRes.ok || !chartRes.ok || !ongoingRes.ok || !completedRes.ok) {
           throw new Error("Falha ao buscar os dados do reservatório.");
         }
 
-        // Atualiza os estados com os novos dados
         setSummary(await summaryRes.json());
         setHistory(await historyRes.json());
         setChart(await chartRes.json());
@@ -89,9 +86,8 @@ const [completedActions, setCompletedActions] = useState<ActionStatus[]>([]);
     };
 
     fetchDataForReservoir();
-  }, [selectedReservoir]); // A mágica acontece aqui: o hook re-executa quando `selectedReservoir` muda
+  }, [selectedReservoir, isReservoirLoading]); // Adicionado isReservoirLoading para garantir a re-execução
 
-  // 6. Renderizar estados de loading e erro
   if (isLoadingPage) {
     return (
       <main className="flex flex-1 items-center justify-center p-4">
@@ -117,12 +113,10 @@ const [completedActions, setCompletedActions] = useState<ActionStatus[]>([]);
   
   const recentHistory = history.slice(0, 8);
 
-  // 7. Renderizar o conteúdo da página com os dados do estado
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">
-          {/* Título dinâmico com o nome do reservatório */}
           Dashboard: {selectedReservoir?.nome}
         </h1>
       </div>

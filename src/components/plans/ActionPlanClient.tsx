@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useReservoir } from "@/context/ReservoirContext"; // 1. Importar o hook do contexto
-import { ActionPlan, ActionPlanFilterOptions } from "@/lib/types"; // 2. Usar tipos globais
+import { useReservoir } from "@/context/ReservoirContext";
+
+import { ActionPlan, ActionPlanFilterOptions } from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -21,14 +22,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:8000/api/reservatorios";
+// CORREÇÃO: A URL base agora vem da variável de ambiente.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
-// 3. Removemos a interface de props, pois o componente buscará seus próprios dados
 export default function ActionPlanClient() {
-  // 4. Usar o contexto para obter o reservatório selecionado
   const { selectedReservoir } = useReservoir();
 
-  // 5. O estado dos filtros agora é gerenciado aqui, começando como nulo
   const [filterOptions, setFilterOptions] =
     useState<ActionPlanFilterOptions | null>(null);
 
@@ -40,26 +39,25 @@ export default function ActionPlanClient() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFiltersLoading, setIsFiltersLoading] = useState(true);
 
-  // 6. Novo useEffect para buscar as OPÇÕES DE FILTRO quando o reservatório mudar
   useEffect(() => {
     if (!selectedReservoir) return;
 
     const fetchFilters = async () => {
       setIsFiltersLoading(true);
-      // Reseta os filtros e resultados ao trocar de reservatório
       handleResetFilters();
       setPlans([]);
 
       try {
+        // CORREÇÃO: A URL é construída dinamicamente com a base correta.
         const res = await fetch(
-          `${API_BASE_URL}/${selectedReservoir.id}/action-plans/filters`
+          `${API_BASE_URL}/api/reservatorios/${selectedReservoir.id}/action-plans/filters`
         );
         if (!res.ok) throw new Error("Falha ao buscar opções de filtro");
         const data: ActionPlanFilterOptions = await res.json();
         setFilterOptions(data);
       } catch (error) {
         console.error("Erro ao buscar filtros:", error);
-        setFilterOptions(null); // Em caso de erro, definimos como nulo
+        setFilterOptions(null);
       } finally {
         setIsFiltersLoading(false);
       }
@@ -68,7 +66,6 @@ export default function ActionPlanClient() {
     fetchFilters();
   }, [selectedReservoir]);
 
-  // Lógica para construir query (sem alteração)
   const queryParams = useMemo(() => {
     const params = new URLSearchParams();
     if (estado) params.append("estado", estado);
@@ -78,24 +75,20 @@ export default function ActionPlanClient() {
     return params.toString();
   }, [estado, impacto, problema, acao]);
 
-  // 7. useEffect para buscar os PLANOS DE AÇÃO (agora depende também do reservatório)
   useEffect(() => {
     if (!selectedReservoir) return;
 
     const fetchPlans = async () => {
       setIsLoading(true);
       try {
+        // CORREÇÃO: A URL é construída dinamicamente com a base correta.
         const res = await fetch(
-          `${API_BASE_URL}/${selectedReservoir.id}/action-plans?${queryParams}`
+          `${API_BASE_URL}/api/reservatorios/${selectedReservoir.id}/action-plans?${queryParams}`
         );
         if (!res.ok) throw new Error(`API error: ${res.statusText}`);
 
-        // --- ADICIONE ESTA LINHA DE DEPURAÇÃO ---
         const data = await res.json();
-        console.log("DADOS RECEBIDOS PELA API:", data);
-        // -----------------------------------------
-
-        setPlans(data); // A linha original permanece
+        setPlans(data);
       } catch (error) {
         console.error("Erro ao buscar planos de ação:", error);
         setPlans([]);
@@ -105,7 +98,7 @@ export default function ActionPlanClient() {
     };
 
     fetchPlans();
-  }, [queryParams, selectedReservoir]); // Depende da query E do reservatório
+  }, [queryParams, selectedReservoir]);
 
   const handleResetFilters = () => {
     setEstado("");
@@ -114,7 +107,6 @@ export default function ActionPlanClient() {
     setAcao("");
   };
 
-  // 8. Renderiza um estado de carregamento principal enquanto os filtros não chegam
   if (isFiltersLoading) {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -134,14 +126,11 @@ export default function ActionPlanClient() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {/* Verifique se todos os 'onValueChange' estão com 'C' maiúsculo */}
             <Select value={estado} onValueChange={setEstado}>
               <SelectTrigger className="w-full truncate">
-                {" "}
                 <SelectValue placeholder="Estado de Seca" />
               </SelectTrigger>
               <SelectContent>
-                {/* Altere de .estados para .estados_de_seca */}
                 {filterOptions?.estados &&
                   filterOptions.estados.map((opt) => (
                     <SelectItem key={opt} value={opt}>
@@ -155,7 +144,6 @@ export default function ActionPlanClient() {
                 <SelectValue placeholder="Tipo de Impacto" />
               </SelectTrigger>
               <SelectContent>
-                {/* Altere de .impactos para .tipos_de_impacto */}
                 {filterOptions?.impactos &&
                   filterOptions.impactos.map((opt) => (
                     <SelectItem key={opt} value={opt}>
@@ -177,7 +165,6 @@ export default function ActionPlanClient() {
                   ))}
               </SelectContent>
             </Select>
-            {/* --- LINHA CORRIGIDA AQUI --- */}
             <Select value={acao} onValueChange={setAcao}>
               <SelectTrigger className="w-full truncate">
                 <SelectValue placeholder="Ação" />
@@ -201,7 +188,6 @@ export default function ActionPlanClient() {
         </CardContent>
       </Card>
 
-      {/* Tabela de Resultados (sem alteração na estrutura) */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Resultados</h2>
         <div className="border rounded-lg overflow-x-auto">

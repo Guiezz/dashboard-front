@@ -4,10 +4,19 @@ import { useState, useEffect } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
 import { Responsavel } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Building, Briefcase, Loader2, Frown, Award, Handshake } from "lucide-react";
+import {
+  Users,
+  Building,
+  Briefcase,
+  Loader2,
+  Frown,
+  Award,
+  Handshake,
+} from "lucide-react";
 import { Parceiros } from "@/components/responsaveis/Parceiros";
 
-const API_BASE_URL = "http://localhost:8000/api/reservatorios";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 // Tipo para a estrutura de dados agrupada
 type GroupedData = {
@@ -50,9 +59,9 @@ export default function ResponsaveisPage() {
     "SECRETARIA-EXECUTIVA",
     "OUTROS ATORES PARTICIPANTES (COGERH)",
     "Equipe de Desenvolvimento do Sistema de Apoio à Decisão", // Nome padrão vindo do BD
-    "EQUIPE DE DESENVOLVIMENTO" // Nome que você usou no exemplo
+    "EQUIPE DE DESENVOLVIMENTO", // Nome que você usou no exemplo
   ];
-  
+
   // Opcional: Para ordenar as organizações dentro de um grupo específico
   const organizacaoOrder: { [key: string]: string[] } = {
     "EQUIPE DO PROJETO": [
@@ -75,12 +84,13 @@ export default function ResponsaveisPage() {
       setError(null);
       try {
         const res = await fetch(
-          `${API_BASE_URL}/${selectedReservoir.id}/responsaveis`
+          `${API_BASE_URL}/api/reservatorios/${selectedReservoir.id}/responsaveis`
         );
-        if (!res.ok) throw new Error(`A API respondeu com status: ${res.status}`);
-        
+        if (!res.ok)
+          throw new Error(`A API respondeu com status: ${res.status}`);
+
         const data: Responsavel[] = await res.json();
-        
+
         const grouped = data.reduce<GroupedData>((acc, responsavel) => {
           const grupo = responsavel.grupo || "Outros Grupos";
           const organizacao = responsavel.organizacao || "Geral";
@@ -93,7 +103,9 @@ export default function ResponsaveisPage() {
         setGroupedData(grouped);
       } catch (err) {
         console.error("Erro ao buscar dados dos responsáveis:", err);
-        setError(err instanceof Error ? err.message : "Ocorreu um erro desconhecido.");
+        setError(
+          err instanceof Error ? err.message : "Ocorreu um erro desconhecido."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -102,9 +114,13 @@ export default function ResponsaveisPage() {
   }, [selectedReservoir]);
 
   // Os estados de Loading e Error permanecem os mesmos...
-  if (isLoading) { /* ...código de loading... */ }
-  if (error) { /* ...código de erro... */ }
-  
+  if (isLoading) {
+    /* ...código de loading... */
+  }
+  if (error) {
+    /* ...código de erro... */
+  }
+
   // --- LÓGICA DE ORDENAÇÃO PARA RENDERIZAÇÃO ---
   const sortedGrupos = Object.keys(groupedData).sort((a, b) => {
     const indexA = grupoDisplayOrder.indexOf(a);
@@ -121,20 +137,23 @@ export default function ResponsaveisPage() {
       {sortedGrupos.map((grupo) => {
         const organizacoes = groupedData[grupo];
         const organizacaoOrderList = organizacaoOrder[grupo] || null;
-        
+
         const sortedOrganizacoes = Object.keys(organizacoes).sort((a, b) => {
-            if (!organizacaoOrderList) return a.localeCompare(b); // Ordem alfabética padrão
-            const indexA = organizacaoOrderList.indexOf(a);
-            const indexB = organizacaoOrderList.indexOf(b);
-            if (indexA === -1 && indexB === -1) return a.localeCompare(b);
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-            return indexA - indexB;
+          if (!organizacaoOrderList) return a.localeCompare(b); // Ordem alfabética padrão
+          const indexA = organizacaoOrderList.indexOf(a);
+          const indexB = organizacaoOrderList.indexOf(b);
+          if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+          if (indexA === -1) return 1;
+          if (indexB === -1) return -1;
+          return indexA - indexB;
         });
 
         // Adiciona um número ao título se o grupo for um dos principais
         const numeroTitulo = grupoDisplayOrder.indexOf(grupo) + 1;
-        const titulo = numeroTitulo > 0 && numeroTitulo < 3 ? `${numeroTitulo}. ${grupo}` : grupo;
+        const titulo =
+          numeroTitulo > 0 && numeroTitulo < 3
+            ? `${numeroTitulo}. ${grupo}`
+            : grupo;
 
         return (
           <div key={grupo}>

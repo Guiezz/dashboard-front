@@ -1,9 +1,8 @@
-// src/app/impactos/page.tsx
-
-"use client"; // 1. Converter para Client Component
+"use client";
 
 import { useState, useEffect } from "react";
-import { useReservoir } from "@/context/ReservoirContext"; // 2. Importar o hook do contexto
+import { useReservoir } from "@/context/ReservoirContext";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -11,18 +10,16 @@ import { IdentificationData } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 
-const API_BASE_URL = "http://localhost:8000/api/reservatorios";
+// CORREÇÃO: A URL base agora vem da variável de ambiente.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export default function ImpactosPage() {
-  // 3. Usar o contexto para obter o reservatório selecionado
   const { selectedReservoir } = useReservoir();
 
-  // 4. Gerenciar o estado dos dados, carregamento e erro
   const [identificationData, setIdentificationData] = useState<IdentificationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 5. Efeito que busca os dados quando o reservatório muda
   useEffect(() => {
     if (!selectedReservoir) {
       setIsLoading(true);
@@ -33,7 +30,8 @@ export default function ImpactosPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${API_BASE_URL}/${selectedReservoir.id}/identification`, {
+        // CORREÇÃO: A URL é construída dinamicamente com a base correta.
+        const res = await fetch(`${API_BASE_URL}/api/reservatorios/${selectedReservoir.id}/identification`, {
           cache: "no-store",
         });
         if (!res.ok) throw new Error("Falha ao buscar dados de identificação");
@@ -49,7 +47,6 @@ export default function ImpactosPage() {
     getIdentificationData();
   }, [selectedReservoir]);
 
-  // 6. Renderizar estados de carregamento e erro
   if (isLoading) {
     return (
       <main className="flex flex-1 items-center justify-center">
@@ -72,7 +69,6 @@ export default function ImpactosPage() {
     );
   }
 
-  // 7. Usar os dados do estado para preencher o texto dinâmico
   const nomeReservatorio = identificationData?.nome || "O Hidrossistema";
   const nomeMunicipio = identificationData?.municipio || "na região";
 

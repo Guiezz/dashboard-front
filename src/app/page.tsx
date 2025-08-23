@@ -1,30 +1,25 @@
-// src/app/page.tsx
-
-"use client"; // 1. Converter para Client Component para usar hooks
+"use client";
 
 import { useState, useEffect } from "react";
-import { useReservoir } from "@/context/ReservoirContext"; // 2. Importar o hook do nosso contexto
+import { useReservoir } from "@/context/ReservoirContext";
 import { IdentificationData } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info, MapPin, Loader2 } from "lucide-react";
 import IdentificationMapWrapper from "@/components/dashboard/IdentificationMapWrapper";
 import Image from "next/image";
 
-const API_BASE_URL = "http://localhost:8000/api/reservatorios";
+// CORREÇÃO: A URL base agora vem da variável de ambiente.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export default function IdentificationPage() {
-  // 3. Usar o contexto para saber qual reservatório está selecionado
   const { selectedReservoir } = useReservoir();
 
-  // 4. Gerenciar o estado dos dados, carregamento e erros para esta página
   const [data, setData] = useState<IdentificationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 5. Efeito que busca os dados sempre que o reservatório selecionado mudar
   useEffect(() => {
     if (!selectedReservoir) {
-      // Se nenhum reservatório estiver selecionado ainda, apenas aguarde.
       setIsLoading(true);
       return;
     }
@@ -33,8 +28,8 @@ export default function IdentificationPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // A URL agora é dinâmica, usando o ID do reservatório selecionado
-        const res = await fetch(`${API_BASE_URL}/${selectedReservoir.id}/identification`, {
+        // CORREÇÃO: A URL é construída dinamicamente com a base correta.
+        const res = await fetch(`${API_BASE_URL}/api/reservatorios/${selectedReservoir.id}/identification`, {
           cache: "no-store",
         });
         if (!res.ok) {
@@ -51,9 +46,8 @@ export default function IdentificationPage() {
     };
 
     getIdentificationData();
-  }, [selectedReservoir]); // A dependência garante que esta função rode novamente se o reservatório mudar
+  }, [selectedReservoir]);
 
-  // 6. Renderizar estado de carregamento
   if (isLoading) {
     return (
       <main className="flex flex-1 items-center justify-center">
@@ -65,7 +59,6 @@ export default function IdentificationPage() {
     );
   }
 
-  // 7. Renderizar estado de erro
   if (error || !data) {
     return (
       <main className="flex flex-1 items-center justify-center">
@@ -79,21 +72,19 @@ export default function IdentificationPage() {
     );
   }
 
-  // O resto do seu JSX permanece o mesmo, usando a variável de estado `data`
   const paragraphs = data.descricao.split("\n").filter((p) => p.trim() !== "");
   
   return (
     <main className="flex flex-1 flex-col gap-8 p-4 lg:p-6">
       <h1 className="text-lg font-semibold md:text-2xl mb-2">
-        Identificação: {data.nome} {/* Título dinâmico */}
+        Identificação: {data.nome}
       </h1>
       
-      {/* MAPA GRANDE */}
       <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5" />
-            Localização: {data.municipio} {/* Localização dinâmica */}
+            Localização: {data.municipio}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -103,9 +94,7 @@ export default function IdentificationPage() {
         </CardContent>
       </Card>
 
-      {/* LINHA COM TEXTO E IMAGEM */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* Texto */}
         <Card className="h-full flex flex-col">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -120,7 +109,6 @@ export default function IdentificationPage() {
           </CardContent>
         </Card>
 
-        {/* Imagem */}
         <Card className="h-full flex flex-col overflow-hidden">
           <CardHeader>
               <CardTitle>Vista do Reservatório</CardTitle>

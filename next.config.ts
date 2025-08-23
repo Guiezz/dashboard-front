@@ -1,16 +1,16 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  // Adicione esta secção de 'images'
+import type { NextConfig } from "next";
+
+const config: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "http",
-        hostname: "127.0.0.1",
-        port: "8000",
-        pathname: "/static/images/**", // Opcional, mas bom para segurança
+        protocol: "https",
+        hostname: "dashboard-production-dc4f.up.railway.app",
+        port: "",
+        pathname: "/static/images/**",
       },
     ],
   },
 };
 
-export default nextConfig;
+export default config;

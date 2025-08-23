@@ -1,10 +1,8 @@
-// src/app/usos-agua/page.tsx
-
-"use client"; // 1. Converter para Client Component
+"use client";
 
 import { useState, useEffect } from "react";
-import { useReservoir } from "@/context/ReservoirContext"; // 2. Importar o hook do contexto
-import { UsoAgua, IdentificationData } from "@/lib/types"; // 3. Usar os tipos globais
+import { useReservoir } from "@/context/ReservoirContext";
+import { UsoAgua, IdentificationData } from "@/lib/types";
 import { UsoAguaChart } from "@/components/usos/UsoAguaChart";
 import {
   Card,
@@ -16,26 +14,18 @@ import {
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:8000/api/reservatorios";
-
-// Nota: A API em /usos-agua retorna um schema que pode ser diferente do que o gráfico espera.
-// Se necessário, você pode precisar transformar os dados aqui.
-// Por enquanto, vamos assumir que o componente do gráfico aceita o tipo 'UsoAgua'.
-// Se o seu componente 'UsoAguaChart' espera 'vazao_normal' e 'vazao_escassez',
-// você deve ajustar o tipo 'UsoAgua' em lib/types.ts para incluir esses campos.
+// CORREÇÃO: A URL base agora vem da variável de ambiente.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export default function UsosAguaPage() {
-  // 4. Usar o contexto para obter o reservatório selecionado
   const { selectedReservoir } = useReservoir();
 
-  // 5. Gerenciar o estado para os dois conjuntos de dados, carregamento e erro
   const [chartData, setChartData] = useState<UsoAgua[]>([]);
   const [identificationData, setIdentificationData] =
     useState<IdentificationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 6. Efeito que busca ambos os dados em paralelo quando o reservatório muda
   useEffect(() => {
     if (!selectedReservoir) {
       setIsLoading(true);
@@ -47,10 +37,10 @@ export default function UsosAguaPage() {
       setError(null);
       try {
         const id = selectedReservoir.id;
-        // Busca os dois dados em paralelo para mais performance
+        // CORREÇÃO: As URLs são construídas dinamicamente com a base correta.
         const [usosRes, idRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/${id}/usos-agua`),
-          fetch(`${API_BASE_URL}/${id}/identification`),
+          fetch(`${API_BASE_URL}/api/reservatorios/${id}/usos-agua`),
+          fetch(`${API_BASE_URL}/api/reservatorios/${id}/identification`),
         ]);
 
         if (!usosRes.ok || !idRes.ok) {
@@ -75,9 +65,8 @@ export default function UsosAguaPage() {
     };
 
     fetchData();
-  }, [selectedReservoir]); // A dependência garante a re-execução da busca
+  }, [selectedReservoir]);
 
-  // 7. Renderizar estado de carregamento
   if (isLoading) {
     return (
       <main className="flex flex-1 items-center justify-center">
@@ -91,7 +80,6 @@ export default function UsosAguaPage() {
     );
   }
 
-  // 8. Renderizar estado de erro
   if (error || !chartData || !identificationData) {
     return (
       <main className="flex flex-1 items-center justify-center p-4">
@@ -105,7 +93,6 @@ export default function UsosAguaPage() {
     );
   }
 
-  // O JSX principal agora usa os dados do estado
   return (
     <main className="p-4 md:p-8 lg:p-10">
       <div className="flex items-center mb-6">
@@ -126,7 +113,7 @@ export default function UsosAguaPage() {
             </CardHeader>
             <CardContent>
               {identificationData.url_imagem_usos ? (
-                <div className="relative w-full h-120">
+                <div className="relative w-full h-[500px]"> {/* Altura fixa para consistência */}
                   <Image
                     src={identificationData.url_imagem_usos}
                     alt={`Diagrama de usos da água do açude ${identificationData.nome}`}
