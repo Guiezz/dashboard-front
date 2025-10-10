@@ -89,28 +89,24 @@ export function VolumeChart({ data }: VolumeChartProps) {
                 tickFormatter={(value) => `${value}%`}
                 label={{ value: 'Metas (%)', angle: 90, position: 'insideRight', fill: '#6b7280' }}
               />
-              
+
               <Tooltip content={<CustomTooltip />} />
               <Legend verticalAlign="top" height={36} />
 
-              {/* Linha do volume associada ao eixo da esquerda */}
               <Line
                 yAxisId="left"
                 type="monotone"
                 dataKey="volume"
-                stroke="#3f1d0f"
+                stroke="var(--chart-1)"
                 strokeWidth={3}
                 dot={false}
                 name="Volume"
               />
-
-              {/* 1. Metas agora são exibidas como linhas contínuas */}
-              {/* 2. Cada linha de meta é associada ao eixo da direita */}
               <Line
                 yAxisId="right"
                 type="monotone"
                 dataKey="meta1"
-                stroke="#991b1b"
+                stroke="var(--chart-2)"
                 strokeWidth={2}
                 strokeDasharray="4 4"
                 dot={false}
@@ -120,7 +116,7 @@ export function VolumeChart({ data }: VolumeChartProps) {
                 yAxisId="right"
                 type="monotone"
                 dataKey="meta2"
-                stroke="#b45309"
+                stroke="var(--chart-3)"
                 strokeWidth={2}
                 strokeDasharray="4 4"
                 dot={false}
@@ -130,12 +126,13 @@ export function VolumeChart({ data }: VolumeChartProps) {
                 yAxisId="right"
                 type="monotone"
                 dataKey="meta3"
-                stroke="#ca8a04"
+                stroke="var(--chart-4)"
                 strokeWidth={2}
                 strokeDasharray="4 4"
                 dot={false}
                 name="Meta 3"
               />
+
             </LineChart>
           </ResponsiveContainer>
         </div>
