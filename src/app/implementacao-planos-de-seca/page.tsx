@@ -6,27 +6,11 @@ import { useReservoir } from "@/context/ReservoirContext";
 // Importe seus tipos e componentes como antes
 import {
   DashboardSummary,
-  HistoryEntry,
-  ChartDataPoint,
+  ActionStatus,
 } from "@/lib/types";
-import { VolumeChart } from "@/components/dashboard/VolumeChart";
 import { MetricCards } from "@/components/dashboard/MetricCards";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { PaginatedTableMedidas } from "@/components/dashboard/PaginatedTableMedidas";
+import { ActionStatusTabs } from "@/components/dashboard/ActionStatusTabs";
 
 // CORREÇÃO: A URL base agora vem da variável de ambiente.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -36,10 +20,10 @@ export default function EstadoDeSecaPage() {
 
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [chart, setChart] = useState<ChartDataPoint[]>([]);
+  const [ongoingActions, setOngoingActions] = useState<ActionStatus[]>([]);
+  const [completedActions, setCompletedActions] = useState<ActionStatus[]>([]);
 
   useEffect(() => {
     if (!selectedReservoir) {
@@ -53,7 +37,6 @@ export default function EstadoDeSecaPage() {
       const id = selectedReservoir.id;
 
       try {
-        // CORREÇÃO: As URLs são construídas dinamicamente com a base correta.
         const [summaryRes, historyRes, chartRes, ongoingRes, completedRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/reservatorios/${id}/dashboard/summary`, { cache: "no-store" }),
           fetch(`${API_BASE_URL}/api/reservatorios/${id}/history`, { cache: "no-store" }),
@@ -67,8 +50,8 @@ export default function EstadoDeSecaPage() {
         }
 
         setSummary(await summaryRes.json());
-        setHistory(await historyRes.json());
-        setChart(await chartRes.json());
+        setOngoingActions(await ongoingRes.json());
+        setCompletedActions(await completedRes.json());
 
       } catch (err) {
         console.error(err);
@@ -79,7 +62,7 @@ export default function EstadoDeSecaPage() {
     };
 
     fetchDataForReservoir();
-  }, [selectedReservoir, isReservoirLoading]); // Adicionado isReservoirLoading para garantir a re-execução
+  }, [selectedReservoir, isReservoirLoading]);
 
   if (isLoadingPage) {
     return (
@@ -103,53 +86,24 @@ export default function EstadoDeSecaPage() {
       </main>
     );
   }
-  
-  const recentHistory = history.slice(0, 8);
-
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">
-          Monitoramento do Estado de Seca do reservatório {selectedReservoir?.nome}
+          Implementação nos planos de seca do reservatório: {selectedReservoir?.nome}
         </h1>
       </div>
       <MetricCards summary={summary} />
       <div className="grid gap-4 md:gap-8 lg:grid-cols-1 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          <VolumeChart data={chart} />
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Histórico Recente</CardTitle>
-            <CardDescription>
-              Os 8 registros mais recentes do sistema.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="text-right">Volume (hm³)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentHistory.map((entry, index) => (
-                  <TableRow key={`${entry.Data}-${index}`}>
-                    <TableCell>{entry.Data}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{entry["Estado de Seca"]}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {entry["Volume (Hm³)"]}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+
+
+      </div>
+      <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
+        <PaginatedTableMedidas
+          data={summary.medidasRecomendadas}
+          estado={summary.estadoAtualSeca}
+        />
+        <ActionStatusTabs ongoing={ongoingActions} completed={completedActions} />
       </div>
     </main>
   );

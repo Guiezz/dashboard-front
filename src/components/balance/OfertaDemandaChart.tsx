@@ -70,13 +70,13 @@ export function OfertaDemandaChart({ data }: Props) {
               <Legend wrapperStyle={{ fontSize: "12px" }} />
               <Bar
                 dataKey="Oferta (L/s)"
-                fill="#60a5fa"
+                fill="var(--chart-1)"
                 name="Oferta (Vazão Regularizada)"
                 radius={[6, 6, 0, 0]}
               />
               <Bar
                 dataKey="Demanda (L/s)"
-                fill="#f87171"
+                fill="var(--chart-2)"
                 name="Demanda Total"
                 radius={[6, 6, 0, 0]}
               />

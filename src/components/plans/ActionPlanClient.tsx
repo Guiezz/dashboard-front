@@ -48,7 +48,6 @@ export default function ActionPlanClient() {
       setPlans([]);
 
       try {
-        // CORREÇÃO: A URL é construída dinamicamente com a base correta.
         const res = await fetch(
           `${API_BASE_URL}/api/reservatorios/${selectedReservoir.id}/action-plans/filters`
         );
@@ -188,49 +187,54 @@ export default function ActionPlanClient() {
         </CardContent>
       </Card>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Resultados</h2>
-        <div className="border rounded-lg overflow-x-auto">
-          <Table className="table-fixed w-full">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[50%]">Descrição da Ação</TableHead>
-                <TableHead className="w-[25%]">Classe da Ação</TableHead>
-                <TableHead className="w-[25%]">Responsáveis</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
+      {/* MODIFICAÇÃO AQUI: A seção de resultados foi envolvida por um Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Resultados</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="border rounded-lg overflow-x-auto">
+            <Table className="table-fixed w-full">
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center h-24">
-                    Carregando...
-                  </TableCell>
+                  <TableHead className="w-[50%]">Descrição da Ação</TableHead>
+                  <TableHead className="w-[25%]">Classe da Ação</TableHead>
+                  <TableHead className="w-[25%]">Responsáveis</TableHead>
                 </TableRow>
-              ) : plans.length > 0 ? (
-                plans.map((plan, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="whitespace-normal break-words align-top py-4">
-                      {plan["DESCRIÇÃO DA AÇÃO"]}
-                    </TableCell>
-                    <TableCell className="whitespace-normal break-words align-top py-4">
-                      {plan["CLASSES DE AÇÃO"]}
-                    </TableCell>
-                    <TableCell className="whitespace-normal break-words align-top py-4">
-                      {plan["RESPONSÁVEIS"]}
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center h-24">
+                      Carregando...
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center h-24">
-                    Nenhum resultado encontrado.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+                ) : plans.length > 0 ? (
+                  plans.map((plan, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="whitespace-normal break-words align-top py-4">
+                        {plan["DESCRIÇÃO DA AÇÃO"]}
+                      </TableCell>
+                      <TableCell className="whitespace-normal break-words align-top py-4">
+                        {plan["CLASSES DE AÇÃO"]}
+                      </TableCell>
+                      <TableCell className="whitespace-normal break-words align-top py-4">
+                        {plan["RESPONSÁVEIS"]}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center h-24">
+                      Nenhum resultado encontrado.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

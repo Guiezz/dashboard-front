@@ -66,7 +66,7 @@ export function BalancoHidricoChart({ data }: Props) {
               <Bar
                 dataKey="Afluência (m³/s)"
                 stackId="a"
-                fill="#60a5fa"
+                fill="var(--chart-1)"
                 name="Afluência (Entrada)"
               />
             </BarChart>

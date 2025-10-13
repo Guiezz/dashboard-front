@@ -21,12 +21,6 @@ export default function RootLayout({
   return (
     <html lang="pt-br" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
           <ReservoirProvider>
             <div className="flex min-h-screen w-full">
               <Sidebar isCollapsed={isCollapsed} />
@@ -39,7 +33,6 @@ export default function RootLayout({
               </div>
             </div>
           </ReservoirProvider>
-        </ThemeProvider>
       </body>
     </html>
   );

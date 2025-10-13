@@ -41,10 +41,10 @@ export function UsoAguaChart({ data }: Props) {
               margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
+              <XAxis
                 dataKey="uso" // A nossa categoria no eixo X
-                fontSize={12} 
-                tick={{ fill: "#4B5563" }} 
+                fontSize={12}
+                tick={{ fill: "#4B5563" }}
                 interval={0} // Garante que todos os nomes apareçam
                 angle={-25} // Inclina os nomes para caberem melhor
                 textAnchor="end"
@@ -73,13 +73,13 @@ export function UsoAguaChart({ data }: Props) {
               <Legend wrapperStyle={{ fontSize: "12px" }} />
               <Bar
                 dataKey="vazao_normal" // Corresponde à chave do JSON da API
-                fill="#60a5fa" // Azul para normalidade
+                fill="var(--chart-1)" // Cor primária do gráfico
                 name="Vazão Normal"
                 radius={[4, 4, 0, 0]}
               />
               <Bar
                 dataKey="vazao_escassez" // Corresponde à chave do JSON da API
-                fill="#f87171" // Vermelho para escassez
+                fill="var(--chart-2)" // Cor secundária do gráfico
                 name="Vazão em Escassez"
                 radius={[4, 4, 0, 0]}
               />

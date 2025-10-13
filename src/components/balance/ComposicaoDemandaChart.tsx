@@ -22,12 +22,11 @@ interface Props {
 }
 
 const COLORS = [
-  "#60a5fa",
-  "#10b981",
-  "#f97316",
-  "#8b5cf6",
-  "#f87171",
-  "#facc15",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
 ];
 
 export function ComposicaoDemandaChart({ data }: Props) {
