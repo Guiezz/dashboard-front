@@ -62,18 +62,18 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
               Identificação
             </Link>
             <Link
-              href="/balanco-hidrico"
-              className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
-            >
-              <Scale className="h-5 w-5" />
-              Balanço Hídrico
-            </Link>
-            <Link
               href="/estado-de-seca"
               className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
             >
               <Activity className="h-5 w-5" />
-              Estado de Seca
+              Monitoramento do Estado de Seca
+            </Link>
+            <Link
+              href="/implementacao-planos-de-seca"
+              className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+            >
+              <Activity className="h-5 w-5" />
+              Implementação dos Planos de Secas
             </Link>
             <Link
               href="/planos-de-acao"
@@ -87,14 +87,21 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
               className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
             >
               <AlertTriangle className="h-5 w-5" />
-              Impactos
+              Impactos das Secas
             </Link>
             <Link
               href="/usos-agua"
               className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
             >
               <Users className="h-5 w-5" />
-              Usos da Água
+              Usos do Hídrossistema
+            </Link>
+            <Link
+              href="/balanco-hidrico"
+              className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+            >
+              <Scale className="h-5 w-5" />
+              Balanço Hídrico
             </Link>
             <Link
               href="/responsaveis"
@@ -128,7 +135,6 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
       {/* Ações do lado direito */}
       <div className="flex items-center gap-4">
         <ReservoirSelector />
-        <ThemeToggle />
       </div>
     </header>
   );

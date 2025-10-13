@@ -8,11 +8,9 @@ import {
   DashboardSummary,
   HistoryEntry,
   ChartDataPoint,
-  ActionStatus,
 } from "@/lib/types";
 import { VolumeChart } from "@/components/dashboard/VolumeChart";
 import { MetricCards } from "@/components/dashboard/MetricCards";
-import { PaginatedTableMedidas } from "@/components/dashboard/PaginatedTableMedidas";
 import {
   Card,
   CardContent,
@@ -29,7 +27,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ActionStatusTabs } from "@/components/dashboard/ActionStatusTabs";
 
 // CORREÇÃO: A URL base agora vem da variável de ambiente.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -43,8 +40,6 @@ export default function EstadoDeSecaPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [chart, setChart] = useState<ChartDataPoint[]>([]);
-  const [ongoingActions, setOngoingActions] = useState<ActionStatus[]>([]);
-  const [completedActions, setCompletedActions] = useState<ActionStatus[]>([]);
 
   useEffect(() => {
     if (!selectedReservoir) {
@@ -74,8 +69,6 @@ export default function EstadoDeSecaPage() {
         setSummary(await summaryRes.json());
         setHistory(await historyRes.json());
         setChart(await chartRes.json());
-        setOngoingActions(await ongoingRes.json());
-        setCompletedActions(await completedRes.json());
 
       } catch (err) {
         console.error(err);
@@ -117,7 +110,7 @@ export default function EstadoDeSecaPage() {
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">
-          Dashboard: {selectedReservoir?.nome}
+          Monitoramento do Estado de Seca do reservatório {selectedReservoir?.nome}
         </h1>
       </div>
       <MetricCards summary={summary} />
@@ -157,13 +150,6 @@ export default function EstadoDeSecaPage() {
             </Table>
           </CardContent>
         </Card>
-      </div>
-      <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
-        <PaginatedTableMedidas
-          data={summary.medidasRecomendadas}
-          estado={summary.estadoAtualSeca}
-        />
-        <ActionStatusTabs ongoing={ongoingActions} completed={completedActions} />
       </div>
     </main>
   );
