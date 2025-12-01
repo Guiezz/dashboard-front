@@ -1,7 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { ChartDataPoint } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"; // Importar Button
+import { config } from "@/config"; // Importar config
+import { RefreshCw } from "lucide-react"; // Importar ícone
 import {
   LineChart,
   Line,
@@ -17,11 +21,14 @@ import { ptBR } from "date-fns/locale/pt-BR";
 
 interface VolumeChartProps {
   data: ChartDataPoint[];
+  reservatorioId?: number; // Novo prop necessário para a API
+  onRefresh?: () => void;  // Callback para recarregar os dados após o update
 }
 
-export function VolumeChart({ data }: VolumeChartProps) {
+export function VolumeChart({ data, reservatorioId, onRefresh }: VolumeChartProps) {
+  const [isUpdating, setIsUpdating] = useState(false);
+
   // Converte as metas para a escala de porcentagem (0-100)
-  // O volume permanece na sua escala original (Hm³)
   const chartData = data.map(point => ({
     ...point,
     meta1: point.meta1 * 100,
@@ -29,7 +36,36 @@ export function VolumeChart({ data }: VolumeChartProps) {
     meta3: point.meta3 * 100,
   }));
 
-  // Tooltip customizado para mostrar ambas as unidades
+  // Função para chamar a rota POST da FUNCEME
+  const handleUpdateData = async () => {
+    if (!reservatorioId) return;
+
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`${config.apiBaseUrl}/api/reservatorios/${reservatorioId}/update-funceme-data`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao atualizar dados.");
+      }
+
+      const result = await response.json();
+      alert(result.status || "Dados atualizados com sucesso!"); // Pode substituir por um Toast se tiver configurado
+
+      // Chama a função do pai para recarregar o gráfico
+      if (onRefresh) {
+        onRefresh();
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao buscar novos dados da FUNCEME.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const dataPoint = payload[0].payload;
@@ -48,8 +84,22 @@ export function VolumeChart({ data }: VolumeChartProps) {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle>📈 Volume (Hm³) comparado com Metas</CardTitle>
+
+        {/* Renderiza o botão apenas se o reservatorioId for passado */}
+        {reservatorioId && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleUpdateData}
+            disabled={isUpdating}
+            title="Buscar dados mais recentes da FUNCEME"
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isUpdating ? "animate-spin" : ""}`} />
+            {isUpdating ? "Atualizando..." : "Atualizar Dados"}
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         <div style={{ width: "100%", height: 400 }}>
@@ -71,7 +121,6 @@ export function VolumeChart({ data }: VolumeChartProps) {
                 }}
                 tick={{ fontSize: 11, fill: "#6b7280" }}
               />
-              {/* Eixo Y da ESQUERDA para o Volume (Hm³) */}
               <YAxis
                 yAxisId="left"
                 tick={{ fontSize: 12, fill: "#6b7280" }}
@@ -79,7 +128,6 @@ export function VolumeChart({ data }: VolumeChartProps) {
                 domain={[0, "auto"]}
                 label={{ value: 'Volume (Hm³)', angle: -90, position: 'insideLeft', fill: '#6b7280' }}
               />
-              {/* Eixo Y da DIREITA para as Metas (%) */}
               <YAxis
                 yAxisId="right"
                 orientation="right"
@@ -93,45 +141,10 @@ export function VolumeChart({ data }: VolumeChartProps) {
               <Tooltip content={<CustomTooltip />} />
               <Legend verticalAlign="top" height={36} />
 
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="volume"
-                stroke="var(--chart-1)"
-                strokeWidth={3}
-                dot={false}
-                name="Volume"
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="meta1"
-                stroke="var(--chart-2)"
-                strokeWidth={2}
-                strokeDasharray="4 4"
-                dot={false}
-                name="Meta 1"
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="meta2"
-                stroke="var(--chart-3)"
-                strokeWidth={2}
-                strokeDasharray="4 4"
-                dot={false}
-                name="Meta 2"
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="meta3"
-                stroke="var(--chart-4)"
-                strokeWidth={2}
-                strokeDasharray="4 4"
-                dot={false}
-                name="Meta 3"
-              />
+              <Line yAxisId="left" type="monotone" dataKey="volume" stroke="var(--chart-1)" strokeWidth={3} dot={false} name="Volume" />
+              <Line yAxisId="right" type="monotone" dataKey="meta1" stroke="var(--chart-2)" strokeWidth={2} strokeDasharray="4 4" dot={false} name="Meta 1" />
+              <Line yAxisId="right" type="monotone" dataKey="meta2" stroke="var(--chart-3)" strokeWidth={2} strokeDasharray="4 4" dot={false} name="Meta 2" />
+              <Line yAxisId="right" type="monotone" dataKey="meta3" stroke="var(--chart-4)" strokeWidth={2} strokeDasharray="4 4" dot={false} name="Meta 3" />
 
             </LineChart>
           </ResponsiveContainer>

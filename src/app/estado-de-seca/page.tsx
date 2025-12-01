@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
 
 // Importe seus tipos e componentes como antes
@@ -36,50 +36,56 @@ export default function EstadoDeSecaPage() {
 
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [chart, setChart] = useState<ChartDataPoint[]>([]);
 
+  // 1. Extraímos a lógica de fetch para uma função usando useCallback para poder reutilizá-la
+  const fetchData = useCallback(async () => {
+    if (!selectedReservoir) return;
+
+    // Opcional: Se não quiser que a tela pisque com "Carregando..." durante o refresh,
+    // você pode criar um estado separado para "isRefreshing" ou remover o setIsLoadingPage(true) daqui.
+    // Por enquanto, mantivemos para garantir que o usuário saiba que algo está acontecendo.
+    setIsLoadingPage(true);
+    setError(null);
+    const id = selectedReservoir.id;
+
+    try {
+      const [summaryRes, historyRes, chartRes, ongoingRes, completedRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/reservatorios/${id}/dashboard/summary`, { cache: "no-store" }),
+        fetch(`${API_BASE_URL}/api/reservatorios/${id}/history`, { cache: "no-store" }),
+        fetch(`${API_BASE_URL}/api/reservatorios/${id}/chart/volume-data`, { cache: "no-store" }),
+        fetch(`${API_BASE_URL}/api/reservatorios/${id}/ongoing-actions`, { cache: "no-store" }),
+        fetch(`${API_BASE_URL}/api/reservatorios/${id}/completed-actions`, { cache: "no-store" }),
+      ]);
+
+      if (!summaryRes.ok || !historyRes.ok || !chartRes.ok || !ongoingRes.ok || !completedRes.ok) {
+        throw new Error("Falha ao buscar os dados do reservatório.");
+      }
+
+      setSummary(await summaryRes.json());
+      setHistory(await historyRes.json());
+      setChart(await chartRes.json());
+
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : "Ocorreu um erro desconhecido.");
+    } finally {
+      setIsLoadingPage(false);
+    }
+  }, [selectedReservoir]); // Recria a função se o reservatório mudar
+
+  // 2. O useEffect agora apenas chama essa função
   useEffect(() => {
     if (!selectedReservoir) {
       setIsLoadingPage(isReservoirLoading);
       return;
     }
 
-    const fetchDataForReservoir = async () => {
-      setIsLoadingPage(true);
-      setError(null);
-      const id = selectedReservoir.id;
-
-      try {
-        // CORREÇÃO: As URLs são construídas dinamicamente com a base correta.
-        const [summaryRes, historyRes, chartRes, ongoingRes, completedRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/reservatorios/${id}/dashboard/summary`, { cache: "no-store" }),
-          fetch(`${API_BASE_URL}/api/reservatorios/${id}/history`, { cache: "no-store" }),
-          fetch(`${API_BASE_URL}/api/reservatorios/${id}/chart/volume-data`, { cache: "no-store" }),
-          fetch(`${API_BASE_URL}/api/reservatorios/${id}/ongoing-actions`, { cache: "no-store" }),
-          fetch(`${API_BASE_URL}/api/reservatorios/${id}/completed-actions`, { cache: "no-store" }),
-        ]);
-
-        if (!summaryRes.ok || !historyRes.ok || !chartRes.ok || !ongoingRes.ok || !completedRes.ok) {
-          throw new Error("Falha ao buscar os dados do reservatório.");
-        }
-
-        setSummary(await summaryRes.json());
-        setHistory(await historyRes.json());
-        setChart(await chartRes.json());
-
-      } catch (err) {
-        console.error(err);
-        setError(err instanceof Error ? err.message : "Ocorreu um erro desconhecido.");
-      } finally {
-        setIsLoadingPage(false);
-      }
-    };
-
-    fetchDataForReservoir();
-  }, [selectedReservoir, isReservoirLoading]); // Adicionado isReservoirLoading para garantir a re-execução
+    fetchData();
+  }, [selectedReservoir, isReservoirLoading, fetchData]);
 
   if (isLoadingPage) {
     return (
@@ -103,7 +109,7 @@ export default function EstadoDeSecaPage() {
       </main>
     );
   }
-  
+
   const recentHistory = history.slice(0, 8);
 
   return (
@@ -116,7 +122,12 @@ export default function EstadoDeSecaPage() {
       <MetricCards summary={summary} />
       <div className="grid gap-4 md:gap-8 lg:grid-cols-1 xl:grid-cols-3">
         <div className="xl:col-span-2">
-          <VolumeChart data={chart} />
+          {/* 3. Passamos a função fetchData para o componente */}
+          <VolumeChart
+            data={chart}
+            reservatorioId={selectedReservoir?.id}
+            onRefresh={fetchData}
+          />
         </div>
         <Card>
           <CardHeader>
