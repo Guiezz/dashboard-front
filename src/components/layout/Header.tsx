@@ -48,7 +48,7 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
           <SheetHeader className="text-left mb-4">
             <SheetTitle className="flex items-center gap-2">
               <Droplets className="h-6 w-6" />
-              <span>Sistema de Apoio à Decisão</span>
+              <Link href="/">Sistema de Apoio à Decisão</Link>
             </SheetTitle>
             <SheetDescription>Navegação principal do sistema.</SheetDescription>
           </SheetHeader>

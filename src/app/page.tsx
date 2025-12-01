@@ -51,7 +51,7 @@ export default function HomePage() {
         </div>
 
         <div className="flex-1 flex justify-center">
-          <div className="relative w-full max-w-md aspect-square bg-accent/20 rounded-full flex items-center justify-center p-8">
+          <div className="relative w-full max-w-sm aspect-square min-h-[360px] bg-accent/20 rounded-full flex items-center justify-center p-4 md:p-8">
             <div className="relative w-full h-full">
               <Image
                 src="/logos/hidrossistemas.png"
