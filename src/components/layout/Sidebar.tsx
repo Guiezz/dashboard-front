@@ -21,7 +21,6 @@ import {
   Hammer,
 } from "lucide-react";
 
-// A interface não precisa mais do setIsCollapsed, mas podemos manter para o futuro
 interface SidebarProps {
   isCollapsed: boolean;
 }
@@ -36,7 +35,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
         <div className="flex h-16 items-center border-b px-4 lg:px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <Droplets className="h-6 w-6" />
-            {!isCollapsed && <span className="transition-opacity duration-300">Monitoramento</span>}
+            {!isCollapsed && <span className="transition-opacity duration-300">Sistema de Apoio à Decisão</span>}
           </Link>
         </div>
 
@@ -47,14 +46,14 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="/"
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${isActive("/") ? "bg-muted text-primary" : "text-muted-foreground"} ${isCollapsed ? 'justify-center' : 'gap-3'} `}
+                  href="/visao-geral"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${isActive("/visao-geral") ? "bg-muted text-primary" : "text-muted-foreground"} ${isCollapsed ? 'justify-center' : 'gap-3'} `}
                 >
                   <Home className="h-4 w-4 flex-shrink-0" />
-                  {!isCollapsed && <span>Identificação</span>}
+                  {!isCollapsed && <span>Visão Geral</span>}
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">Identificação</TooltipContent>
+              <TooltipContent side="right">Visão Geral</TooltipContent>
             </Tooltip>
 
             <Tooltip>

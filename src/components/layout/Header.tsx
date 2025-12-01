@@ -48,18 +48,18 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
           <SheetHeader className="text-left mb-4">
             <SheetTitle className="flex items-center gap-2">
               <Droplets className="h-6 w-6" />
-              <span>Monitoramento</span>
+              <span>Sistema de Apoio à Decisão</span>
             </SheetTitle>
             <SheetDescription>Navegação principal do sistema.</SheetDescription>
           </SheetHeader>
 
           <nav className="grid gap-6 text-lg font-medium">
             <Link
-              href="/"
+              href="/visao-geral"
               className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
             >
               <Home className="h-5 w-5" />
-              Identificação
+              Visão Geral
             </Link>
             <Link
               href="/estado-de-seca"

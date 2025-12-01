@@ -1,187 +1,160 @@
 // src/app/page.tsx
-
 "use client";
 
-import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useReservoir } from "@/context/ReservoirContext";
-import { IdentificationData } from "@/lib/types";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
+  CardDescription
 } from "@/components/ui/card";
-import { Info, MapPin, Loader2 } from "lucide-react";
-import IdentificationMapWrapper from "@/components/dashboard/IdentificationMapWrapper";
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import {
+  Activity,
+  Droplets,
+  Scale,
+  AlertTriangle,
+  ListChecks,
+  ArrowRight,
+  ShieldCheck
+} from "lucide-react";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-
-export default function IdentificationPage() {
-  const { selectedReservoir } = useReservoir();
-
-  const [data, setData] = useState<IdentificationData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!selectedReservoir) {
-      setIsLoading(true);
-      return;
-    }
-
-    const getIdentificationData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/reservatorios/${selectedReservoir.id}/identification`,
-          { cache: "no-store" }
-        );
-        if (!res.ok) throw new Error("Falha ao buscar dados de identificação");
-
-        const fetchedData: IdentificationData = await res.json();
-        setData(fetchedData);
-      } catch (err) {
-        console.error(err);
-        setError(
-          err instanceof Error ? err.message : "Ocorreu um erro desconhecido."
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    getIdentificationData();
-  }, [selectedReservoir]);
-
-  if (isLoading) {
-    return (
-      <main className="flex flex-1 items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="text-muted-foreground">
-            Carregando dados do reservatório...
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <main className="flex flex-1 items-center justify-center">
-        <div className="text-center p-6 bg-card border rounded-xl shadow-sm">
-          <h1 className="text-2xl font-semibold text-destructive mb-2">
-            Erro ao carregar os dados
-          </h1>
-          <p>{error || "Verifique se a API está em execução e tente novamente."}</p>
-        </div>
-      </main>
-    );
-  }
-
-  const paragraphs = data.descricao.split("\n").filter((p) => p.trim() !== "");
+export default function HomePage() {
+  const { reservatorios, setSelectedReservoir } = useReservoir();
 
   return (
-    <main className="flex flex-1 flex-col gap-8 p-4 lg:p-8 bg-background">
-      {/* Seção de Boas-Vindas */}
-      <Card className="border shadow-sm">
-        <CardHeader className="flex flex-col md:flex-row items-center justify-between gap-6">
+    <main className="flex flex-col gap-12 p-4 lg:p-8 bg-background animate-fade-in">
 
-          <div className="flex flex-col text-center md:text-left flex-1">
-            <CardTitle className="text-2xl md:text-3xl font-semibold text-foreground leading-snug">
-              Sistema de Apoio à Decisão de Gestão de Secas do Hidrossistema{" "}
-              {data.nome}
-            </CardTitle>
-            <CardDescription className="mt-3 text-muted-foreground leading-relaxed text-justify">
-              O Sistema de Apoio à Decisão de Gestão de Secas do Hidrossistema foi
-              desenvolvido como um instrumento-chave para o monitoramento,
-              acompanhamento e divulgação das ações concebidas nos Planos de Gestão
-              Proativa de Seca dos hidrossistemas do Ceará. Sua principal finalidade
-              é oferecer uma interface simples, didática e acessível aos diversos
-              atores sociais envolvidos na gestão dos recursos hídricos, como membros
-              de comitês de bacia, comissões gestoras e os órgãos responsáveis pela
-              gestão hídrica. Através desta plataforma, é possível conhecer e
-              acompanhar os diferentes estados de seca definidos para cada sistema,
-              visualizar as ações recomendadas para cada cenário e interagir com os
-              dados, fortalecendo a transparência e a tomada de decisão colaborativa.
-            </CardDescription>
+      {/* Hero Section */}
+      <section className="flex flex-col md:flex-row items-center gap-8 py-8 md:py-16">
+        <div className="flex-1 space-y-6">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
+            Sistema de Apoio à Decisão de Gestão de Secas
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed text-justify">
+            Uma plataforma integrada desenvolvida para o monitoramento, acompanhamento e divulgação das ações concebidas nos Planos de Gestão Proativa de Seca dos hidrossistemas do Ceará.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <Button size="lg" asChild className="gap-2">
+              <Link href="/visao-geral">
+                Acessar Visão Geral
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/estado-de-seca">Ver Monitoramento</Link>
+            </Button>
           </div>
+        </div>
 
-          {/* Logo maior e responsiva */}
-          <div className="relative h-32 w-64 md:h-36 md:w-72 flex-shrink-0">
-            <Image
-              src="/logos/hidrossistemas.png"
-              alt="Logo Hidrossistemas"
-              fill
-              className="object-contain"
-              priority
-            />
+        <div className="flex-1 flex justify-center">
+          <div className="relative w-full max-w-md aspect-square bg-accent/20 rounded-full flex items-center justify-center p-8">
+            <div className="relative w-full h-full">
+              <Image
+                src="/logos/hidrossistemas.png"
+                alt="Logo Hidrossistemas"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+      </section>
 
+      {/* Funcionalidades */}
+      <section className="space-y-8">
+        <div className="text-center space-y-2">
+          <h2 className="text-3xl font-bold">Funcionalidades do Sistema</h2>
+          <p className="text-muted-foreground">Ferramentas essenciais para a governança hídrica</p>
+        </div>
 
-      {/* Conteúdo principal */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* Sobre o Reservatório */}
-        <Card className="h-full flex flex-col border shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
-              <Info className="h-5 w-5 text-muted-foreground" />
-              Sobre o Reservatório
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="prose prose-sm sm:prose-base max-w-none text-justify flex-1">
-            {paragraphs.map((paragraph, index) => (
-              <p key={`p-${index}`} className="mb-3 leading-relaxed">
-                {paragraph}
-              </p>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <FeatureCard
+            icon={<Activity className="h-8 w-8 text-primary" />}
+            title="Monitoramento de Secas"
+            description="Acompanhe a evolução do estado de seca (Hidrológica, Agrícola, etc.) com base em indicadores atualizados."
+            href="/estado-de-seca"
+          />
+          <FeatureCard
+            icon={<ListChecks className="h-8 w-8 text-primary" />}
+            title="Planos de Ação"
+            description="Consulte as ações estratégicas e emergenciais planejadas para mitigar os efeitos da escassez."
+            href="/planos-de-acao"
+          />
+          <FeatureCard
+            icon={<Scale className="h-8 w-8 text-primary" />}
+            title="Balanço Hídrico"
+            description="Visualize a relação entre oferta e demanda hídrica, simulações e cenários futuros."
+            href="/balanco-hidrico"
+          />
+          <FeatureCard
+            icon={<AlertTriangle className="h-8 w-8 text-primary" />}
+            title="Impactos"
+            description="Entenda os impactos socioeconômicos e ambientais da seca na região."
+            href="/impactos"
+          />
+          <FeatureCard
+            icon={<Droplets className="h-8 w-8 text-primary" />}
+            title="Usos da Água"
+            description="Análise detalhada dos múltiplos usos da água e suas respectivas demandas."
+            href="/usos-agua"
+          />
+          <FeatureCard
+            icon={<ShieldCheck className="h-8 w-8 text-primary" />}
+            title="Implementação"
+            description="Acompanhe o status de implementação das medidas acordadas nos planos."
+            href="/implementacao-planos-de-seca"
+          />
+        </div>
+      </section>
 
-        {/* Imagem */}
-        <Card className="h-full flex flex-col overflow-hidden border shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-foreground">
-              Vista do Reservatório
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 flex items-center justify-center">
-            {data.url_imagem ? (
-              <div className="relative w-full aspect-video rounded-lg overflow-hidden">
-                <Image
-                  src={data.url_imagem}
-                  alt={`Vista do reservatório ${data.nome}`}
-                  fill
-                  className="object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-            ) : (
-              <p className="text-muted-foreground">Imagem não disponível.</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      {/* Reservatórios Disponíveis */}
+      <section className="space-y-8 py-8 border-t">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold">Hidrossistemas Monitorados</h2>
+          <p className="text-muted-foreground">Atualmente, o sistema contempla os seguintes reservatórios:</p>
+        </div>
 
-      {/* Mapa */}
-      <Card className="overflow-hidden border shadow-sm hover:shadow-md transition-shadow">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {reservatorios.map((res) => (
+            <Card
+              key={res.id}
+              className="hover:border-primary/50 transition-colors cursor-pointer"
+              onClick={() => {
+                setSelectedReservoir(res);
+                // Opcional: Redirecionar ao clicar
+              }}
+            >
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <Droplets className="h-5 w-5 text-primary" />
+                </div>
+                <span className="font-medium">{res.nome}</span>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function FeatureCard({ icon, title, description, href }: { icon: React.ReactNode, title: string, description: string, href: string }) {
+  return (
+    <Link href={href} className="group">
+      <Card className="h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group-hover:border-primary/50">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            <MapPin className="h-5 w-5 text-muted-foreground" />
-            Localização: {data.municipio}
-          </CardTitle>
+          <div className="mb-2">{icon}</div>
+          <CardTitle className="group-hover:text-primary transition-colors">{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="w-full h-96 rounded-lg overflow-hidden border">
-            <IdentificationMapWrapper lat={data.lat} lon={data.long} />
-          </div>
+          <CardDescription>{description}</CardDescription>
         </CardContent>
       </Card>
-    </main>
+    </Link>
   );
 }
