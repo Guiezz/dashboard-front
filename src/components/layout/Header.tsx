@@ -24,7 +24,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { ThemeToggle } from "./ThemeToggle";
 import { ReservoirSelector } from "./ReservoirSelector";
 
 // Props para controle da Sidebar

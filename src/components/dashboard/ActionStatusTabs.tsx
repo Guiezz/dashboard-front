@@ -4,23 +4,37 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from "@/components/ui/table";
-import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+  TableHead,
+} from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ListChecks, CheckCircle, Search } from "lucide-react";
-import type { ActionStatus } from "@/lib/types";
+import type { PlanoAcao } from "@/lib/types";
 
 interface Props {
-  ongoing: ActionStatus[];
-  completed: ActionStatus[];
+  ongoing: PlanoAcao[];
+  completed: PlanoAcao[];
 }
 
-function PaginatedTable({ data }: { data: ActionStatus[] }) {
+function PaginatedTable({ data }: { data: PlanoAcao[] }) {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6; 
+  const itemsPerPage = 6;
   const totalPages = Math.ceil(data.length / itemsPerPage);
-  const currentData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentData = data.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   return (
     <div>
@@ -36,10 +50,20 @@ function PaginatedTable({ data }: { data: ActionStatus[] }) {
           <TableBody>
             {currentData.map((action, index) => (
               <TableRow key={index}>
-                <TableCell className="font-medium whitespace-normal break-all align-top py-4">{action['AÇÕES']}</TableCell>
-                <TableCell className="whitespace-normal break-all align-top py-4">{action['RESPONSÁVEIS']}</TableCell>
+                <TableCell className="font-medium whitespace-normal break-all align-top py-4">
+                  {action.acoes}
+                </TableCell>
                 <TableCell className="whitespace-normal break-all align-top py-4">
-                  <Badge variant={action['SITUAÇÃO'] === 'Concluído' ? 'secondary' : 'outline'}>{action['SITUAÇÃO']}</Badge>
+                  {action.responsaveis}
+                </TableCell>
+                <TableCell className="whitespace-normal break-all align-top py-4">
+                  <Badge
+                    variant={
+                      action.situacao === "Concluído" ? "secondary" : "outline"
+                    }
+                  >
+                    {action.situacao}
+                  </Badge>
                 </TableCell>
               </TableRow>
             ))}
@@ -51,11 +75,29 @@ function PaginatedTable({ data }: { data: ActionStatus[] }) {
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <Button variant="ghost" onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1}>Anterior</Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  Anterior
+                </Button>
               </PaginationItem>
-              <PaginationItem><span className="text-sm p-2">Página {currentPage} de {totalPages}</span></PaginationItem>
               <PaginationItem>
-                <Button variant="ghost" onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}>Próximo</Button>
+                <span className="text-sm p-2">
+                  Página {currentPage} de {totalPages}
+                </span>
+              </PaginationItem>
+              <PaginationItem>
+                <Button
+                  variant="ghost"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  Próximo
+                </Button>
               </PaginationItem>
             </PaginationContent>
           </Pagination>
@@ -69,8 +111,8 @@ export function ActionStatusTabs({ ongoing, completed }: Props) {
   return (
     <Card>
       <CardHeader className="flex items-center">
-          <Search className="h-4 w-4 mr-2" />
-          <CardTitle className="m-0">Situação das Ações</CardTitle>
+        <Search className="h-4 w-4 mr-2" />
+        <CardTitle className="m-0">Situação das Ações</CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="ongoing">
@@ -88,14 +130,18 @@ export function ActionStatusTabs({ ongoing, completed }: Props) {
             {ongoing.length > 0 ? (
               <PaginatedTable data={ongoing} />
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">Nenhuma ação em andamento no momento.</p>
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Nenhuma ação em andamento no momento.
+              </p>
             )}
           </TabsContent>
           <TabsContent value="completed" className="mt-4">
             {completed.length > 0 ? (
               <PaginatedTable data={completed} />
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">Nenhuma ação foi concluída ainda.</p>
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Nenhuma ação foi concluída ainda.
+              </p>
             )}
           </TabsContent>
         </Tabs>

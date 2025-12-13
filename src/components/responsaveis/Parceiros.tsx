@@ -1,7 +1,7 @@
 // src/components/responsaveis/Parceiros.tsx
 
 import Image from "next/image";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 // Organização por linhas para respeitar hierarquia da imagem
 const parceiros = [
@@ -22,16 +22,15 @@ const parceiros = [
 export function Parceiros() {
   return (
     <Card>
-      <CardHeader>
-      </CardHeader>
+      <CardHeader></CardHeader>
       <CardContent className="flex flex-col items-center gap-6 pt-6">
         {parceiros.map((linha, idx) => (
-          <div key={idx} className="flex flex-wrap justify-center items-center gap-8">
+          <div
+            key={idx}
+            className="flex flex-wrap justify-center items-center gap-8"
+          >
             {linha.map((parceiro) => (
-              <div
-                key={parceiro.nome}
-                className="flex flex-col items-start"
-              >
+              <div key={parceiro.nome} className="flex flex-col items-start">
                 {parceiro.apoio && (
                   <span className="text-sm text-gray-600 font-medium mb-1">
                     Apoio:

@@ -1,10 +1,10 @@
-// src/config/index.ts
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-if (!apiBaseUrl) {
-  throw new Error("A variável de ambiente NEXT_PUBLIC_API_BASE_URL não está definida.");
+if (!API_URL) {
+  // Opcional: Lançar erro ou usar localhost como fallback para dev
+  console.warn("API URL não definida, usando localhost");
 }
 
 export const config = {
-  apiBaseUrl,
+  apiBaseUrl: API_URL || "http://localhost:8000/api",
 };

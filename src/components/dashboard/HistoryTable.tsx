@@ -35,8 +35,12 @@ export function HistoryTable({ data }: HistoryTableProps) {
               <TableRow key={index}>
                 <TableCell>{entry.Data}</TableCell>
                 <TableCell>{entry["Estado de Seca"]}</TableCell>
-                <TableCell className="text-right">{entry["Volume (%)"]}</TableCell>
-                <TableCell className="text-right">{entry["Volume (Hm³)"]}</TableCell>
+                <TableCell className="text-right">
+                  {entry["Volume (hm3)"]}
+                </TableCell>
+                <TableCell className="text-right">
+                  {entry["Volume (hm3)"]}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
