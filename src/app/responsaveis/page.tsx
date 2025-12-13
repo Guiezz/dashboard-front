@@ -2,21 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
+import { config } from "@/config"; // <--- Import config
 import { Responsavel } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Users,
-  Building,
-  Briefcase,
-  Loader2,
-  Frown,
-  Award,
-  Handshake,
-} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Parceiros } from "@/components/responsaveis/Parceiros";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 // Tipo para a estrutura de dados agrupada
 type GroupedData = {
@@ -25,7 +14,6 @@ type GroupedData = {
   };
 };
 
-// Componente MemberList (sem alterações, mas incluído para o contexto)
 const MemberList = ({ members }: { members: Responsavel[] | undefined }) => {
   if (!members || members.length === 0) {
     return <p className="text-sm text-muted-foreground">-</p>;
@@ -50,19 +38,16 @@ export default function ResponsaveisPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // --- HIERARQUIA E ORDEM DEFINIDAS ---
-  // Array para garantir a ordem de renderização dos cards principais (grupos)
   const grupoDisplayOrder: string[] = [
     "EQUIPE DO PROJETO",
     "Comitê da Bacia Hidrográfica da Região Metropolitana de Fortaleza",
     "COMISSÃO GESTORA DO AÇUDE ACARAPE DO MEIO",
     "SECRETARIA-EXECUTIVA",
     "OUTROS ATORES PARTICIPANTES (COGERH)",
-    "Equipe de Desenvolvimento do Sistema de Apoio à Decisão", // Nome padrão vindo do BD
-    "EQUIPE DE DESENVOLVIMENTO", // Nome que você usou no exemplo
+    "Equipe de Desenvolvimento do Sistema de Apoio à Decisão",
+    "EQUIPE DE DESENVOLVIMENTO",
   ];
 
-  // Opcional: Para ordenar as organizações dentro de um grupo específico
   const organizacaoOrder: { [key: string]: string[] } = {
     "EQUIPE DO PROJETO": [
       "COORDENAÇÃO GERAL",
@@ -83,8 +68,9 @@ export default function ResponsaveisPage() {
       setIsLoading(true);
       setError(null);
       try {
+        // CORREÇÃO: Usando config.apiBaseUrl. Rota: /reservatorios/{id}/responsibles (confirmado no routes.go)
         const res = await fetch(
-          `${API_BASE_URL}/api/reservatorios/${selectedReservoir.id}/responsaveis`
+          `${config.apiBaseUrl}/reservatorios/${selectedReservoir.id}/responsibles`,
         );
         if (!res.ok)
           throw new Error(`A API respondeu com status: ${res.status}`);
@@ -104,7 +90,7 @@ export default function ResponsaveisPage() {
       } catch (err) {
         console.error("Erro ao buscar dados dos responsáveis:", err);
         setError(
-          err instanceof Error ? err.message : "Ocorreu um erro desconhecido."
+          err instanceof Error ? err.message : "Ocorreu um erro desconhecido.",
         );
       } finally {
         setIsLoading(false);
@@ -113,33 +99,30 @@ export default function ResponsaveisPage() {
     getResponsaveisData();
   }, [selectedReservoir]);
 
-  // Os estados de Loading e Error permanecem os mesmos...
   if (isLoading) {
-    /* ...código de loading... */
+    return <div className="p-8 text-center">Carregando responsáveis...</div>;
   }
   if (error) {
-    /* ...código de erro... */
+    return <div className="p-8 text-center text-red-500">Erro: {error}</div>;
   }
 
-  // --- LÓGICA DE ORDENAÇÃO PARA RENDERIZAÇÃO ---
   const sortedGrupos = Object.keys(groupedData).sort((a, b) => {
     const indexA = grupoDisplayOrder.indexOf(a);
     const indexB = grupoDisplayOrder.indexOf(b);
-    if (indexA === -1 && indexB === -1) return a.localeCompare(b); // Alfabética para não listados
-    if (indexA === -1) return 1; // Não listados vão para o final
-    if (indexB === -1) return -1; // Não listados vão para o final
-    return indexA - indexB; // Ordena com base na lista
+    if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
   });
 
   return (
     <main className="p-4 md:p-8 lg:p-10 space-y-12">
-      {/* 1. EQUIPE DO PROJETO */}
       {sortedGrupos.map((grupo) => {
         const organizacoes = groupedData[grupo];
         const organizacaoOrderList = organizacaoOrder[grupo] || null;
 
         const sortedOrganizacoes = Object.keys(organizacoes).sort((a, b) => {
-          if (!organizacaoOrderList) return a.localeCompare(b); // Ordem alfabética padrão
+          if (!organizacaoOrderList) return a.localeCompare(b);
           const indexA = organizacaoOrderList.indexOf(a);
           const indexB = organizacaoOrderList.indexOf(b);
           if (indexA === -1 && indexB === -1) return a.localeCompare(b);
@@ -148,7 +131,6 @@ export default function ResponsaveisPage() {
           return indexA - indexB;
         });
 
-        // Adiciona um número ao título se o grupo for um dos principais
         const numeroTitulo = grupoDisplayOrder.indexOf(grupo) + 1;
         const titulo =
           numeroTitulo > 0 && numeroTitulo < 3
@@ -176,10 +158,6 @@ export default function ResponsaveisPage() {
         );
       })}
 
-      {/* 3. EQUIPE DE DESENVOLVIMENTO (Exemplo de como tratar um grupo específico) */}
-      {/* Este grupo já é renderizado pelo loop acima, mas você poderia dar um tratamento especial se quisesse */}
-
-      {/* 4. FINANCIAMENTO E REALIZAÇÃO */}
       <div>
         <h2 className="text-lg font-semibold md:text-2xl mb-4">
           4. Financiamento e Realização
