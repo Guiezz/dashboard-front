@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
+import { config } from "@/config"; // <--- Import config
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,13 +11,11 @@ import { IdentificationData } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 
-// CORREÇÃO: A URL base agora vem da variável de ambiente.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-
 export default function ImpactosPage() {
   const { selectedReservoir } = useReservoir();
 
-  const [identificationData, setIdentificationData] = useState<IdentificationData | null>(null);
+  const [identificationData, setIdentificationData] =
+    useState<IdentificationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,15 +29,20 @@ export default function ImpactosPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // CORREÇÃO: A URL é construída dinamicamente com a base correta.
-        const res = await fetch(`${API_BASE_URL}/api/reservatorios/${selectedReservoir.id}/identification`, {
-          cache: "no-store",
-        });
+        // CORREÇÃO: Usando config.apiBaseUrl. Rota: /reservatorios/{id}/identification
+        const res = await fetch(
+          `${config.apiBaseUrl}/reservatorios/${selectedReservoir.id}/identification`,
+          {
+            cache: "no-store",
+          },
+        );
         if (!res.ok) throw new Error("Falha ao buscar dados de identificação");
         setIdentificationData(await res.json());
       } catch (err) {
         console.error(err);
-        setError(err instanceof Error ? err.message : "Ocorreu um erro desconhecido.");
+        setError(
+          err instanceof Error ? err.message : "Ocorreu um erro desconhecido.",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -60,12 +64,14 @@ export default function ImpactosPage() {
 
   if (error) {
     return (
-        <main className="flex flex-1 items-center justify-center p-4">
-            <div className="text-center">
-                <h1 className="text-2xl font-bold text-red-500">Erro ao carregar os dados.</h1>
-                <p>{error}</p>
-            </div>
-        </main>
+      <main className="flex flex-1 items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-500">
+            Erro ao carregar os dados.
+          </h1>
+          <p>{error}</p>
+        </div>
+      </main>
     );
   }
 
@@ -143,7 +149,7 @@ export default function ImpactosPage() {
               src="/infografico/infografico.png"
               alt="Infográfico dos Principais Impactos"
               fill
-              style={{ objectFit: 'contain' }}
+              style={{ objectFit: "contain" }}
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>

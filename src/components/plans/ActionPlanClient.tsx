@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
+import { config } from "@/config"; // <--- Import config
 
-import { ActionPlan, ActionPlanFilterOptions } from "@/lib/types";
+import { PlanoAcao, ActionPlanFilterOptions } from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -22,9 +23,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
-// CORREÇÃO: A URL base agora vem da variável de ambiente.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-
 export default function ActionPlanClient() {
   const { selectedReservoir } = useReservoir();
 
@@ -35,7 +33,7 @@ export default function ActionPlanClient() {
   const [impacto, setImpacto] = useState<string>("");
   const [problema, setProblema] = useState<string>("");
   const [acao, setAcao] = useState<string>("");
-  const [plans, setPlans] = useState<ActionPlan[]>([]);
+  const [plans, setPlans] = useState<PlanoAcao[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFiltersLoading, setIsFiltersLoading] = useState(true);
 
@@ -48,8 +46,9 @@ export default function ActionPlanClient() {
       setPlans([]);
 
       try {
+        // CORREÇÃO: Usando config.apiBaseUrl e rota correta
         const res = await fetch(
-          `${API_BASE_URL}/api/reservatorios/${selectedReservoir.id}/action-plans/filters`
+          `${config.apiBaseUrl}/reservatorios/${selectedReservoir.id}/action-plans/filters`,
         );
         if (!res.ok) throw new Error("Falha ao buscar opções de filtro");
         const data: ActionPlanFilterOptions = await res.json();
@@ -80,9 +79,9 @@ export default function ActionPlanClient() {
     const fetchPlans = async () => {
       setIsLoading(true);
       try {
-        // CORREÇÃO: A URL é construída dinamicamente com a base correta.
+        // CORREÇÃO: Usando config.apiBaseUrl e rota correta
         const res = await fetch(
-          `${API_BASE_URL}/api/reservatorios/${selectedReservoir.id}/action-plans?${queryParams}`
+          `${config.apiBaseUrl}/reservatorios/${selectedReservoir.id}/action-plans?${queryParams}`,
         );
         if (!res.ok) throw new Error(`API error: ${res.statusText}`);
 
@@ -187,7 +186,6 @@ export default function ActionPlanClient() {
         </CardContent>
       </Card>
 
-      {/* MODIFICAÇÃO AQUI: A seção de resultados foi envolvida por um Card */}
       <Card>
         <CardHeader>
           <CardTitle>Resultados</CardTitle>
@@ -213,13 +211,13 @@ export default function ActionPlanClient() {
                   plans.map((plan, index) => (
                     <TableRow key={index}>
                       <TableCell className="whitespace-normal break-words align-top py-4">
-                        {plan["DESCRIÇÃO DA AÇÃO"]}
+                        {plan.descricao_acao}
                       </TableCell>
                       <TableCell className="whitespace-normal break-words align-top py-4">
-                        {plan["CLASSES DE AÇÃO"]}
+                        {plan.classes_acao}
                       </TableCell>
                       <TableCell className="whitespace-normal break-words align-top py-4">
-                        {plan["RESPONSÁVEIS"]}
+                        {plan.responsaveis}
                       </TableCell>
                     </TableRow>
                   ))

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
+import { config } from "@/config"; // <--- Importar config
 import { UsoAgua, IdentificationData } from "@/lib/types";
 import { UsoAguaChart } from "@/components/usos/UsoAguaChart";
 import {
@@ -13,9 +14,6 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
-
-// CORREÇÃO: A URL base agora vem da variável de ambiente.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export default function UsosAguaPage() {
   const { selectedReservoir } = useReservoir();
@@ -37,15 +35,16 @@ export default function UsosAguaPage() {
       setError(null);
       try {
         const id = selectedReservoir.id;
-        // CORREÇÃO: As URLs são construídas dinamicamente com a base correta.
+
+        // CORREÇÃO: Usando config.apiBaseUrl e rota "/water-uses"
         const [usosRes, idRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/reservatorios/${id}/usos-agua`),
-          fetch(`${API_BASE_URL}/api/reservatorios/${id}/identification`),
+          fetch(`${config.apiBaseUrl}/reservatorios/${id}/water-uses`),
+          fetch(`${config.apiBaseUrl}/reservatorios/${id}/identification`),
         ]);
 
         if (!usosRes.ok || !idRes.ok) {
           throw new Error(
-            "Falha ao buscar os dados da página de Usos da Água."
+            "Falha ao buscar os dados da página de Usos da Água.",
           );
         }
 
@@ -57,7 +56,7 @@ export default function UsosAguaPage() {
       } catch (err) {
         console.error(err);
         setError(
-          err instanceof Error ? err.message : "Ocorreu um erro desconhecido."
+          err instanceof Error ? err.message : "Ocorreu um erro desconhecido.",
         );
       } finally {
         setIsLoading(false);
@@ -113,7 +112,7 @@ export default function UsosAguaPage() {
             </CardHeader>
             <CardContent>
               {identificationData.url_imagem_usos ? (
-                <div className="relative w-full h-[500px]"> {/* Altura fixa para consistência */}
+                <div className="relative w-full h-[500px]">
                   <Image
                     src={identificationData.url_imagem_usos}
                     alt={`Diagrama de usos da água do açude ${identificationData.nome}`}

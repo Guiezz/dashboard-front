@@ -7,8 +7,7 @@ const config: NextConfig = {
     // mesmo que o seu projeto tenha erros de ESLint.
     ignoreDuringBuilds: true,
   },
-  
-  // A sua configuração de imagens existente permanece aqui
+
   images: {
     remotePatterns: [
       {
@@ -16,6 +15,13 @@ const config: NextConfig = {
         hostname: "dashboard-production-dc4f.up.railway.app",
         port: "",
         pathname: "/static/images/**",
+      },
+      // ADICIONE ESTE BLOCO ABAIXO:
+      {
+        protocol: "https",
+        hostname: "drought-plan-dashboard-api.onrender.com",
+        port: "",
+        pathname: "/static/images/**", // Ajustei para bater com o caminho do erro
       },
     ],
   },

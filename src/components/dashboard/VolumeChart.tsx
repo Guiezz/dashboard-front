@@ -22,14 +22,18 @@ import { ptBR } from "date-fns/locale/pt-BR";
 interface VolumeChartProps {
   data: ChartDataPoint[];
   reservatorioId?: number; // Novo prop necessário para a API
-  onRefresh?: () => void;  // Callback para recarregar os dados após o update
+  onRefresh?: () => void; // Callback para recarregar os dados após o update
 }
 
-export function VolumeChart({ data, reservatorioId, onRefresh }: VolumeChartProps) {
+export function VolumeChart({
+  data,
+  reservatorioId,
+  onRefresh,
+}: VolumeChartProps) {
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Converte as metas para a escala de porcentagem (0-100)
-  const chartData = data.map(point => ({
+  const chartData = data.map((point) => ({
     ...point,
     meta1: point.meta1 * 100,
     meta2: point.meta2 * 100,
@@ -42,9 +46,12 @@ export function VolumeChart({ data, reservatorioId, onRefresh }: VolumeChartProp
 
     setIsUpdating(true);
     try {
-      const response = await fetch(`${config.apiBaseUrl}/api/reservatorios/${reservatorioId}/update-funceme-data`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `${config.apiBaseUrl}/reservatorios/${reservatorioId}/funceme-update`,
+        {
+          method: "POST",
+        },
+      );
 
       if (!response.ok) {
         throw new Error("Falha ao atualizar dados.");
@@ -57,7 +64,6 @@ export function VolumeChart({ data, reservatorioId, onRefresh }: VolumeChartProp
       if (onRefresh) {
         onRefresh();
       }
-
     } catch (error) {
       console.error(error);
       alert("Erro ao buscar novos dados da FUNCEME.");
@@ -72,10 +78,18 @@ export function VolumeChart({ data, reservatorioId, onRefresh }: VolumeChartProp
       return (
         <div className="p-2 bg-white border border-gray-200 rounded-md shadow-sm">
           <p className="font-bold text-gray-800">{`Data: ${format(new Date(label), "dd/MM/yyyy", { locale: ptBR })}`}</p>
-          <p style={{ color: '#3f1d0f' }}>{`Volume: ${dataPoint.volume.toFixed(2)} Hm³`}</p>
-          <p style={{ color: '#991b1b' }}>{`Meta 1: ${dataPoint.meta1.toFixed(1)}%`}</p>
-          <p style={{ color: '#b45309' }}>{`Meta 2: ${dataPoint.meta2.toFixed(1)}%`}</p>
-          <p style={{ color: '#ca8a04' }}>{`Meta 3: ${dataPoint.meta3.toFixed(1)}%`}</p>
+          <p
+            style={{ color: "#3f1d0f" }}
+          >{`Volume: ${dataPoint.volume.toFixed(2)} Hm³`}</p>
+          <p
+            style={{ color: "#991b1b" }}
+          >{`Meta 1: ${dataPoint.meta1.toFixed(1)}%`}</p>
+          <p
+            style={{ color: "#b45309" }}
+          >{`Meta 2: ${dataPoint.meta2.toFixed(1)}%`}</p>
+          <p
+            style={{ color: "#ca8a04" }}
+          >{`Meta 3: ${dataPoint.meta3.toFixed(1)}%`}</p>
         </div>
       );
     }
@@ -96,7 +110,9 @@ export function VolumeChart({ data, reservatorioId, onRefresh }: VolumeChartProp
             disabled={isUpdating}
             title="Buscar dados mais recentes da FUNCEME"
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isUpdating ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isUpdating ? "animate-spin" : ""}`}
+            />
             {isUpdating ? "Atualizando..." : "Atualizar Dados"}
           </Button>
         )}
@@ -104,7 +120,10 @@ export function VolumeChart({ data, reservatorioId, onRefresh }: VolumeChartProp
       <CardContent>
         <div style={{ width: "100%", height: 400 }}>
           <ResponsiveContainer>
-            <LineChart data={chartData} margin={{ top: 10, right: 30, left: 20, bottom: 40 }}>
+            <LineChart
+              data={chartData}
+              margin={{ top: 10, right: 30, left: 20, bottom: 40 }}
+            >
               <CartesianGrid strokeDasharray="2 4" stroke="#e5e5e5" />
               <XAxis
                 dataKey="Data"
@@ -126,7 +145,12 @@ export function VolumeChart({ data, reservatorioId, onRefresh }: VolumeChartProp
                 tick={{ fontSize: 12, fill: "#6b7280" }}
                 width={50}
                 domain={[0, "auto"]}
-                label={{ value: 'Volume (Hm³)', angle: -90, position: 'insideLeft', fill: '#6b7280' }}
+                label={{
+                  value: "Volume (Hm³)",
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: "#6b7280",
+                }}
               />
               <YAxis
                 yAxisId="right"
@@ -135,17 +159,56 @@ export function VolumeChart({ data, reservatorioId, onRefresh }: VolumeChartProp
                 width={50}
                 domain={[0, 100]}
                 tickFormatter={(value) => `${value}%`}
-                label={{ value: 'Metas (%)', angle: 90, position: 'insideRight', fill: '#6b7280' }}
+                label={{
+                  value: "Metas (%)",
+                  angle: 90,
+                  position: "insideRight",
+                  fill: "#6b7280",
+                }}
               />
 
               <Tooltip content={<CustomTooltip />} />
               <Legend verticalAlign="top" height={36} />
 
-              <Line yAxisId="left" type="monotone" dataKey="volume" stroke="var(--chart-1)" strokeWidth={3} dot={false} name="Volume" />
-              <Line yAxisId="right" type="monotone" dataKey="meta1" stroke="var(--chart-2)" strokeWidth={2} strokeDasharray="4 4" dot={false} name="Meta 1" />
-              <Line yAxisId="right" type="monotone" dataKey="meta2" stroke="var(--chart-3)" strokeWidth={2} strokeDasharray="4 4" dot={false} name="Meta 2" />
-              <Line yAxisId="right" type="monotone" dataKey="meta3" stroke="var(--chart-4)" strokeWidth={2} strokeDasharray="4 4" dot={false} name="Meta 3" />
-
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="volume"
+                stroke="var(--chart-1)"
+                strokeWidth={3}
+                dot={false}
+                name="Volume"
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="meta1"
+                stroke="var(--chart-2)"
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={false}
+                name="Meta 1"
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="meta2"
+                stroke="var(--chart-3)"
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={false}
+                name="Meta 2"
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="meta3"
+                stroke="var(--chart-4)"
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={false}
+                name="Meta 3"
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>

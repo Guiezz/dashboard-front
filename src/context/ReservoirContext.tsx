@@ -1,30 +1,35 @@
 "use client";
 
-import { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { ReservatorioSelecao } from '@/lib/types'; // Certifique-se que este tipo corresponde à sua API
+import { config } from "@/config"; // Importa a config centralizada
+import {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
+import { Reservatorio } from "@/lib/types";
 
 // --- INTERFACES ---
 interface ReservoirContextType {
-  reservatorios: ReservatorioSelecao[];
-  selectedReservoir: ReservatorioSelecao | null;
-  setSelectedReservoir: (reservoir: ReservatorioSelecao | null) => void;
+  reservatorios: Reservatorio[];
+  selectedReservoir: Reservatorio | null;
+  setSelectedReservoir: (reservoir: Reservatorio | null) => void;
   isLoading: boolean;
-  error: string | null; // Adicionado para melhor feedback de erros
+  error: string | null;
 }
 
 // --- CONTEXTO ---
-const ReservoirContext = createContext<ReservoirContextType | undefined>(undefined);
-
-// --- LÓGICA PRINCIPAL ---
-
-// CORREÇÃO: A URL base é lida da variável de ambiente, permitindo deploy.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+const ReservoirContext = createContext<ReservoirContextType | undefined>(
+  undefined,
+);
 
 export function ReservoirProvider({ children }: { children: ReactNode }) {
-  const [reservatorios, setReservatorios] = useState<ReservatorioSelecao[]>([]);
-  const [selectedReservoir, setSelectedReservoir] = useState<ReservatorioSelecao | null>(null);
+  const [reservatorios, setReservatorios] = useState<Reservatorio[]>([]);
+  const [selectedReservoir, setSelectedReservoir] =
+    useState<Reservatorio | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // Estado para guardar mensagens de erro
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchReservoirs() {
@@ -32,16 +37,19 @@ export function ReservoirProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         setError(null);
 
-        // CORREÇÃO: Usa a variável API_BASE_URL para construir o URL completo.
-        const res = await fetch(`${API_BASE_URL}/api/reservatorios`, { cache: "no-store" });
+        // CORREÇÃO: Usa config.apiBaseUrl (que já vem do config/index.ts)
+        const res = await fetch(`${config.apiBaseUrl}/reservatorios`, {
+          cache: "no-store",
+        });
 
         if (!res.ok) {
-          // Captura o texto do erro da API para uma mensagem mais clara
           const errorText = await res.text();
-          throw new Error(`Falha ao buscar a lista de reservatórios: ${res.status} ${res.statusText} - ${errorText}`);
+          throw new Error(
+            `Falha ao buscar a lista de reservatórios: ${res.status} ${res.statusText} - ${errorText}`,
+          );
         }
 
-        const data: ReservatorioSelecao[] = await res.json();
+        const data: Reservatorio[] = await res.json();
         setReservatorios(data);
 
         if (data.length > 0) {
@@ -49,16 +57,24 @@ export function ReservoirProvider({ children }: { children: ReactNode }) {
         }
       } catch (err: any) {
         console.error(err);
-        setError(err.message); // Guarda a mensagem de erro no estado
+        setError(err.message);
       } finally {
         setIsLoading(false);
       }
     }
     fetchReservoirs();
-  }, []); // O array vazio assegura que esta função só corre uma vez
+  }, []);
 
   return (
-    <ReservoirContext.Provider value={{ reservatorios, selectedReservoir, setSelectedReservoir, isLoading, error }}>
+    <ReservoirContext.Provider
+      value={{
+        reservatorios,
+        selectedReservoir,
+        setSelectedReservoir,
+        isLoading,
+        error,
+      }}
+    >
       {children}
     </ReservoirContext.Provider>
   );
@@ -68,7 +84,7 @@ export function ReservoirProvider({ children }: { children: ReactNode }) {
 export function useReservoir() {
   const context = useContext(ReservoirContext);
   if (context === undefined) {
-    throw new Error('useReservoir must be used within a ReservoirProvider');
+    throw new Error("useReservoir must be used within a ReservoirProvider");
   }
   return context;
 }
