@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
-import { config } from "@/config"; // <--- Import config
+import { config } from "@/config";
 
 import { PlanoAcao, ActionPlanFilterOptions } from "@/lib/types";
 import {
@@ -46,7 +46,6 @@ export default function ActionPlanClient() {
       setPlans([]);
 
       try {
-        // CORREÇÃO: Usando config.apiBaseUrl e rota correta
         const res = await fetch(
           `${config.apiBaseUrl}/reservatorios/${selectedReservoir.id}/action-plans/filters`,
         );
@@ -79,7 +78,6 @@ export default function ActionPlanClient() {
     const fetchPlans = async () => {
       setIsLoading(true);
       try {
-        // CORREÇÃO: Usando config.apiBaseUrl e rota correta
         const res = await fetch(
           `${config.apiBaseUrl}/reservatorios/${selectedReservoir.id}/action-plans?${queryParams}`,
         );
@@ -130,11 +128,13 @@ export default function ActionPlanClient() {
               </SelectTrigger>
               <SelectContent>
                 {filterOptions?.estados &&
-                  filterOptions.estados.map((opt) => (
-                    <SelectItem key={opt} value={opt}>
-                      {opt}
-                    </SelectItem>
-                  ))}
+                  filterOptions.estados
+                    .filter((opt) => opt && opt.trim() !== "")
+                    .map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
               </SelectContent>
             </Select>
             <Select value={impacto} onValueChange={setImpacto}>
@@ -143,11 +143,13 @@ export default function ActionPlanClient() {
               </SelectTrigger>
               <SelectContent>
                 {filterOptions?.impactos &&
-                  filterOptions.impactos.map((opt) => (
-                    <SelectItem key={opt} value={opt}>
-                      {opt}
-                    </SelectItem>
-                  ))}
+                  filterOptions.impactos
+                    .filter((opt) => opt && opt.trim() !== "")
+                    .map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
               </SelectContent>
             </Select>
             <Select value={problema} onValueChange={setProblema}>
@@ -156,11 +158,13 @@ export default function ActionPlanClient() {
               </SelectTrigger>
               <SelectContent>
                 {filterOptions?.problemas &&
-                  filterOptions.problemas.map((opt) => (
-                    <SelectItem key={opt} value={opt}>
-                      {opt}
-                    </SelectItem>
-                  ))}
+                  filterOptions.problemas
+                    .filter((opt) => opt && opt.trim() !== "")
+                    .map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
               </SelectContent>
             </Select>
             <Select value={acao} onValueChange={setAcao}>
@@ -169,11 +173,13 @@ export default function ActionPlanClient() {
               </SelectTrigger>
               <SelectContent>
                 {filterOptions?.acoes &&
-                  filterOptions.acoes.map((opt) => (
-                    <SelectItem key={opt} value={opt}>
-                      {opt}
-                    </SelectItem>
-                  ))}
+                  filterOptions.acoes
+                    .filter((opt) => opt && opt.trim() !== "")
+                    .map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
               </SelectContent>
             </Select>
             <button

@@ -63,7 +63,7 @@ export function OfertaDemandaChart({ data }: Props) {
                   borderColor: "#e5e7eb",
                   fontSize: 12,
                   borderRadius: 8,
-                  color: "#111827"
+                  color: "#111827",
                 }}
                 formatter={(value: number) => `${value.toFixed(2)} L/s`}
               />

@@ -6,12 +6,11 @@ export interface Reservatorio {
   id: number;
   nome: string;
   municipio: string;
-  // Campos opcionais que podem vir ou não dependendo da rota
+
   bacia?: string;
   capacidade_hm3?: number;
 }
 
-// Para a página de Identificação (Bate com model.ReservatorioDetalhes do Go)
 export interface IdentificationData {
   id: number;
   nome: string;
@@ -25,7 +24,6 @@ export interface IdentificationData {
 
 // --- TIPOS PARA O DASHBOARD ---
 
-// Bate com model.DashboardResumo
 export interface DashboardSummary {
   volumeAtualHm3: number;
   volumePercentual: number;
@@ -35,25 +33,20 @@ export interface DashboardSummary {
   medidasRecomendadas: PlanoAcaoResumo[];
 }
 
-// Bate com model.PlanoAcaoResumo
 export interface PlanoAcaoResumo {
-  acao: string; // Antes era "Ação"
-  descricao: string; // Antes era "Descrição"
-  responsaveis: string; // Antes era "Responsáveis"
+  acao: string;
+  descricao: string;
+  responsaveis: string;
 }
 
-// Bate com model.HistoricoTabela
 export interface HistoryEntry {
-  Data: string; // O Go manda "Data" (Maiúsculo) para compatibilidade
-  "Estado de Seca": string; // O Go manda essa string formatada
-  "Volume (hm3)": number; // O Go manda assim
-  // "Volume (%)" foi removido pois o novo endpoint history não manda esse campo por padrão,
-  // mas você pode calcular no front se precisar: (vol / cap) * 100
+  Data: string;
+  "Estado de Seca": string;
+  "Volume (hm3)": number;
 }
 
-// Bate com model.GraficoVolumeData
 export interface ChartDataPoint {
-  Data: string; // O Go foi configurado para mandar "Data"
+  Data: string;
   volume: number;
   meta1: number;
   meta2: number;
@@ -62,7 +55,6 @@ export interface ChartDataPoint {
 
 // --- TIPOS PARA A PÁGINA DE PLANOS DE AÇÃO ---
 
-// Bate com model.FiltrosPlanoAcao
 export interface ActionPlanFilterOptions {
   estados: string[];
   impactos: string[];
@@ -70,14 +62,12 @@ export interface ActionPlanFilterOptions {
   acoes: string[];
 }
 
-// Bate com model.PlanoAcao (A estrutura completa do banco)
-// Substitui as interfaces antigas "ActionStatus" e "ActionPlan"
 export interface PlanoAcao {
   id: number;
   reservatorio_id: number;
-  situacao: string; // "Em andamento", "Concluído"
-  acoes: string; // Nome da ação
-  descricao_acao: string; // Descrição detalhada
+  situacao: string;
+  acoes: string;
+  descricao_acao: string;
   responsaveis: string;
   classes_acao: string;
   tipo_impactos: string;
@@ -89,14 +79,12 @@ export interface PlanoAcao {
 
 // --- TIPOS PARA A PÁGINA DE BALANÇO HÍDRICO ---
 
-// Bate com model.BalancoHidricoResumo
 export interface StaticWaterBalanceCharts {
   balancoMensal: BalancoMensal[];
   composicaoDemanda: ComposicaoDemanda[];
   ofertaDemanda: OfertaDemanda[];
 }
 
-// Estes mapas continuam iguais pois o UseCase do Go monta o map[string]interface{} manualmente
 export interface BalancoMensal {
   Mês: string;
   "Afluência (m³/s)": number;
@@ -106,19 +94,18 @@ export interface BalancoMensal {
 }
 
 export interface ComposicaoDemanda {
-  Uso: string;
-  "Vazão (L/s)": number;
+  usos: string;
+  demandas_hm3: number;
 }
 
 export interface OfertaDemanda {
-  Cenário: string;
-  "Oferta (L/s)": number;
-  "Demanda (L/s)": number;
+  cenarios: string;
+  "oferta_l/s": number;
+  "demanda_l/s": number;
 }
 
 // --- TIPOS ADICIONAIS ---
 
-// Bate com model.UsoAgua
 export interface UsoAgua {
   id: number;
   reservatorio_id: number;
@@ -127,7 +114,6 @@ export interface UsoAgua {
   vazao_escassez: number;
 }
 
-// Bate com model.Responsavel
 export interface Responsavel {
   id: number;
   reservatorio_id: number;

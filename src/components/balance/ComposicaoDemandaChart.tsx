@@ -30,8 +30,6 @@ const COLORS = [
 ];
 
 export function ComposicaoDemandaChart({ data }: Props) {
-  const totalVazao = data.reduce((sum, item) => sum + item["Vazão (L/s)"], 0);
-
   return (
     <Card>
       <CardHeader>
@@ -51,7 +49,7 @@ export function ComposicaoDemandaChart({ data }: Props) {
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
-                label={({ name, percent }) =>
+                label={({ name, percent }: any) =>
                   (percent ?? 0) > 0.004
                     ? `${name} (${((percent ?? 0) * 100).toFixed(1)}%)`
                     : ""
