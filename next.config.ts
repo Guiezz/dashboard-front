@@ -23,6 +23,12 @@ const config: NextConfig = {
         port: "",
         pathname: "/static/images/**", // Ajustei para bater com o caminho do erro
       },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "8000",
+        pathname: "/static/images/**", // Ajustei para bater com o caminho do erro
+      },
     ],
   },
 };
