@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
-import { config } from "@/config"; // <--- 1. Importar config
+import { config } from "@/config";
 
 import { DashboardSummary, HistoryEntry, ChartDataPoint } from "@/lib/types";
 import { VolumeChart } from "@/components/dashboard/VolumeChart";
@@ -126,7 +126,7 @@ export default function EstadoDeSecaPage() {
     );
   }
 
-  const recentHistory = history.slice(0, 8);
+  const recentHistory = history.slice(-8).reverse();
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
