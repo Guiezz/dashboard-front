@@ -2,13 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
-import { config } from "@/config"; // <--- Import config
+import { config } from "@/config";
 
-// Importe seus tipos e componentes como antes
-import { DashboardSummary, PlanoAcao } from "@/lib/types";
+// Adicionado HistoryEntry aos imports
+import { DashboardSummary, PlanoAcao, HistoryEntry } from "@/lib/types";
 import { MetricCards } from "@/components/dashboard/MetricCards";
 import { PaginatedTableMedidas } from "@/components/dashboard/PaginatedTableMedidas";
 import { ActionStatusTabs } from "@/components/dashboard/ActionStatusTabs";
+
+// Função auxiliar para converter strings de data (igual à outra página)
+function parseDate(dateStr: string): Date {
+  if (dateStr.includes("/")) {
+    const [day, month, year] = dateStr.split("/").map(Number);
+    return new Date(year, month - 1, day);
+  }
+  return new Date(dateStr);
+}
 
 export default function EstadoDeSecaPage() {
   const { selectedReservoir, isLoading: isReservoirLoading } = useReservoir();
@@ -19,6 +28,10 @@ export default function EstadoDeSecaPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [ongoingActions, setOngoingActions] = useState<PlanoAcao[]>([]);
   const [completedActions, setCompletedActions] = useState<PlanoAcao[]>([]);
+
+  // Novos estados para o cálculo de tempo (Adicionado)
+  const [daysInState, setDaysInState] = useState<number>(0);
+  const [sinceDate, setSinceDate] = useState<string>("");
 
   useEffect(() => {
     if (!selectedReservoir) {
@@ -32,31 +45,72 @@ export default function EstadoDeSecaPage() {
       const id = selectedReservoir.id;
 
       try {
-        // CORREÇÃO: Usando config.apiBaseUrl e rotas corretas
-        const [summaryRes, ongoingRes, completedRes] = await Promise.all([
-          fetch(`${config.apiBaseUrl}/reservatorios/${id}/dashboard/summary`, {
-            cache: "no-store",
-          }),
-          // Note: Removi history e chart daqui pois não estão sendo usados neste componente específico (baseado no código original fornecido)
-          // Se forem necessários, descomente e ajuste:
-          // fetch(`${config.apiBaseUrl}/reservatorios/${id}/history`, { cache: "no-store" }),
-          // fetch(`${config.apiBaseUrl}/reservatorios/${id}/dashboard/volume-chart`, { cache: "no-store" }),
+        // Adicionada a busca do histórico (historyRes)
+        const [summaryRes, historyRes, ongoingRes, completedRes] =
+          await Promise.all([
+            fetch(
+              `${config.apiBaseUrl}/reservatorios/${id}/dashboard/summary`,
+              {
+                cache: "no-store",
+              },
+            ),
+            fetch(`${config.apiBaseUrl}/reservatorios/${id}/history`, {
+              cache: "no-store",
+            }),
+            fetch(`${config.apiBaseUrl}/reservatorios/${id}/ongoing-actions`, {
+              cache: "no-store",
+            }),
+            fetch(
+              `${config.apiBaseUrl}/reservatorios/${id}/completed-actions`,
+              {
+                cache: "no-store",
+              },
+            ),
+          ]);
 
-          fetch(`${config.apiBaseUrl}/reservatorios/${id}/ongoing-actions`, {
-            cache: "no-store",
-          }),
-          fetch(`${config.apiBaseUrl}/reservatorios/${id}/completed-actions`, {
-            cache: "no-store",
-          }),
-        ]);
-
-        if (!summaryRes.ok || !ongoingRes.ok || !completedRes.ok) {
+        if (
+          !summaryRes.ok ||
+          !historyRes.ok ||
+          !ongoingRes.ok ||
+          !completedRes.ok
+        ) {
           throw new Error("Falha ao buscar os dados do reservatório.");
         }
 
-        setSummary(await summaryRes.json());
+        const summaryData = await summaryRes.json();
+        const historyData: HistoryEntry[] = await historyRes.json();
+
+        setSummary(summaryData);
         setOngoingActions(await ongoingRes.json());
         setCompletedActions(await completedRes.json());
+
+        // --- LÓGICA DE CÁLCULO DO TEMPO NO ESTADO (Adicionada) ---
+        if (historyData && historyData.length > 0) {
+          const sortedHistory = [...historyData];
+          const currentEntry = sortedHistory[sortedHistory.length - 1];
+          const currentState = currentEntry["Estado de Seca"];
+
+          let startDate = currentEntry.Data;
+
+          for (let i = sortedHistory.length - 1; i >= 0; i--) {
+            if (sortedHistory[i]["Estado de Seca"] !== currentState) {
+              break;
+            }
+            startDate = sortedHistory[i].Data;
+          }
+
+          const start = parseDate(startDate);
+          const today = new Date();
+          start.setHours(0, 0, 0, 0);
+          today.setHours(0, 0, 0, 0);
+
+          const diffTime = Math.abs(today.getTime() - start.getTime());
+          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+          setDaysInState(diffDays);
+          setSinceDate(startDate);
+        }
+        // ---------------------------------------------------------
       } catch (err) {
         console.error(err);
         setError(
@@ -104,7 +158,14 @@ export default function EstadoDeSecaPage() {
           {selectedReservoir?.nome}
         </h1>
       </div>
-      <MetricCards summary={summary} />
+
+      {/* Adicionado as props calculatedDays e sinceDate */}
+      <MetricCards
+        summary={summary}
+        calculatedDays={daysInState}
+        sinceDate={sinceDate}
+      />
+
       <div className="grid gap-4 md:gap-8 lg:grid-cols-1 xl:grid-cols-3">
         {/* Placeholder para conteúdo futuro se necessário */}
       </div>
