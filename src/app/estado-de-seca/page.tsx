@@ -24,7 +24,14 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-// Remover: const API_BASE_URL = ...
+// Função auxiliar para converter strings de data (ex: "dd/mm/yyyy") em objetos Date
+function parseDate(dateStr: string): Date {
+  if (dateStr.includes("/")) {
+    const [day, month, year] = dateStr.split("/").map(Number);
+    return new Date(year, month - 1, day);
+  }
+  return new Date(dateStr);
+}
 
 export default function EstadoDeSecaPage() {
   const { selectedReservoir, isLoading: isReservoirLoading } = useReservoir();
@@ -36,6 +43,10 @@ export default function EstadoDeSecaPage() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [chart, setChart] = useState<ChartDataPoint[]>([]);
 
+  // Novos estados para armazenar o cálculo de tempo no estado
+  const [daysInState, setDaysInState] = useState<number>(0);
+  const [sinceDate, setSinceDate] = useState<string>("");
+
   const fetchData = useCallback(async () => {
     if (!selectedReservoir) return;
 
@@ -44,7 +55,6 @@ export default function EstadoDeSecaPage() {
     const id = selectedReservoir.id;
 
     try {
-      // 2. Usar config.apiBaseUrl e corrigir a rota do gráfico
       const [summaryRes, historyRes, chartRes, ongoingRes, completedRes] =
         await Promise.all([
           fetch(`${config.apiBaseUrl}/reservatorios/${id}/dashboard/summary`, {
@@ -53,13 +63,10 @@ export default function EstadoDeSecaPage() {
           fetch(`${config.apiBaseUrl}/reservatorios/${id}/history`, {
             cache: "no-store",
           }),
-
-          // CORREÇÃO DA ROTA AQUI:
           fetch(
             `${config.apiBaseUrl}/reservatorios/${id}/dashboard/volume-chart`,
             { cache: "no-store" },
           ),
-
           fetch(`${config.apiBaseUrl}/reservatorios/${id}/ongoing-actions`, {
             cache: "no-store",
           }),
@@ -78,9 +85,44 @@ export default function EstadoDeSecaPage() {
         throw new Error("Falha ao buscar os dados do reservatório.");
       }
 
-      setSummary(await summaryRes.json());
-      setHistory(await historyRes.json());
-      setChart(await chartRes.json());
+      const summaryData = await summaryRes.json();
+      const historyData = await historyRes.json();
+      const chartData = await chartRes.json();
+
+      setSummary(summaryData);
+      setHistory(historyData);
+      setChart(chartData);
+
+      // --- LÓGICA DE CÁLCULO DO TEMPO NO ESTADO ---
+      if (historyData && historyData.length > 0) {
+        // Assume que o histórico vem ordenado (Antigo -> Novo)
+        const sortedHistory = [...historyData];
+        const currentEntry = sortedHistory[sortedHistory.length - 1]; // Último registro
+        const currentState = currentEntry["Estado de Seca"];
+
+        let startDate = currentEntry.Data;
+
+        // Percorre de trás para frente para achar a data onde o estado mudou
+        for (let i = sortedHistory.length - 1; i >= 0; i--) {
+          if (sortedHistory[i]["Estado de Seca"] !== currentState) {
+            break; // Encontrou mudança de estado
+          }
+          startDate = sortedHistory[i].Data; // Atualiza data de início
+        }
+
+        // Calcula a diferença de dias
+        const start = parseDate(startDate);
+        const today = new Date();
+        start.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        const diffTime = Math.abs(today.getTime() - start.getTime());
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        setDaysInState(diffDays);
+        setSinceDate(startDate);
+      }
+      // ---------------------------------------------
     } catch (err) {
       console.error(err);
       setError(
@@ -126,6 +168,7 @@ export default function EstadoDeSecaPage() {
     );
   }
 
+  // PEGA OS ÚLTIMOS 8 E INVERTE PARA MOSTRAR O MAIS RECENTE PRIMEIRO
   const recentHistory = history.slice(-8).reverse();
 
   return (
@@ -136,7 +179,14 @@ export default function EstadoDeSecaPage() {
           {selectedReservoir?.nome}
         </h1>
       </div>
-      <MetricCards summary={summary} />
+
+      {/* Passa os dados calculados para o card */}
+      <MetricCards
+        summary={summary}
+        calculatedDays={daysInState}
+        sinceDate={sinceDate}
+      />
+
       <div className="grid gap-4 md:gap-8 lg:grid-cols-1 xl:grid-cols-3">
         <div className="xl:col-span-2">
           <VolumeChart
