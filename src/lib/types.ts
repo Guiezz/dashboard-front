@@ -116,9 +116,9 @@ export interface UsoAgua {
 
 export interface Responsavel {
   id: number;
-  reservatorio_id: number;
+  nome: string; // Agora receberá o nome corretamente
   grupo: string;
   organizacao: string;
-  cargo: string;
-  nome: string;
+  setor: string; // Garantir que o campo existe para exibição
+  cargo: string; // Agora receberá o cargo corretamente
 }
