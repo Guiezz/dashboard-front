@@ -9,7 +9,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription
+  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +19,7 @@ import {
   AlertTriangle,
   ListChecks,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -27,7 +27,6 @@ export default function HomePage() {
 
   return (
     <main className="flex flex-col gap-12 p-4 lg:p-8 bg-background animate-fade-in">
-
       {/* Hero Section */}
       <section className="flex flex-col md:flex-row items-center gap-8 py-8 md:py-16">
         <div className="flex-1 space-y-6">
@@ -35,7 +34,9 @@ export default function HomePage() {
             Sistema de Apoio à Decisão de Gestão de Secas
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed text-justify">
-            Uma plataforma integrada desenvolvida para o monitoramento, acompanhamento e divulgação das ações concebidas nos Planos de Gestão Proativa de Seca dos hidrossistemas do Ceará.
+            Uma plataforma integrada desenvolvida para o monitoramento,
+            acompanhamento e divulgação das ações concebidas nos Planos de
+            Gestão Proativa de Seca dos hidrossistemas do Ceará.
           </p>
           <div className="flex flex-wrap gap-4">
             <Button size="lg" asChild className="gap-2">
@@ -69,7 +70,9 @@ export default function HomePage() {
       <section className="text-primary space-y-8">
         <div className="space-y-2">
           <h2 className="text-3xl font-bold">Funcionalidades do Sistema</h2>
-          <p className="text-muted-foreground">Ferramentas essenciais para a governança hídrica</p>
+          <p className="text-muted-foreground">
+            Ferramentas essenciais para a governança hídrica
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -116,7 +119,9 @@ export default function HomePage() {
       <section className="space-y-8 py-8 border-t">
         <div className="space-y-2">
           <h2 className="text-2xl font-bold">Hidrossistemas Monitorados</h2>
-          <p className="text-muted-foreground">Atualmente, o sistema contempla os seguintes reservatórios:</p>
+          <p className="text-muted-foreground">
+            Atualmente, o sistema contempla os seguintes reservatórios:
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -143,13 +148,25 @@ export default function HomePage() {
   );
 }
 
-function FeatureCard({ icon, title, description, href }: { icon: React.ReactNode, title: string, description: string, href: string }) {
+function FeatureCard({
+  icon,
+  title,
+  description,
+  href,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  href: string;
+}) {
   return (
     <Link href={href} className="group">
       <Card className="h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group-hover:border-primary/50">
         <CardHeader>
           <div className="mb-2">{icon}</div>
-          <CardTitle className="group-hover:text-primary transition-colors">{title}</CardTitle>
+          <CardTitle className="group-hover:text-primary transition-colors">
+            {title}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <CardDescription>{description}</CardDescription>

@@ -1,59 +1,79 @@
-// src/components/responsaveis/Parceiros.tsx
+"use client";
 
 import Image from "next/image";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-
-// Organização por linhas para respeitar hierarquia da imagem
-const parceiros = [
-  [
-    { nome: "CEPAS", logo: "/logos/cepas.png" },
-    { nome: "UFC", logo: "/logos/ufc-v.png" },
-    { nome: "Cientista Chefe", logo: "/logos/cientista-chefe.png" },
-    { nome: "FUNCAP", logo: "/logos/funcap.png", apoio: true },
-    { nome: "SECITECE", logo: "/logos/secitece-v.png", destaque: true },
-  ],
-  [
-    { nome: "FUNCEME", logo: "/logos/funceme.png" },
-    { nome: "COGERH", logo: "/logos/cogerh.png" },
-    { nome: "SRH", logo: "/logos/srh-h.png", destaque: true },
-  ],
-];
 
 export function Parceiros() {
   return (
-    <Card>
-      <CardHeader></CardHeader>
-      <CardContent className="flex flex-col items-center gap-6 pt-6">
-        {parceiros.map((linha, idx) => (
-          <div
-            key={idx}
-            className="flex flex-wrap justify-center items-center gap-8"
-          >
-            {linha.map((parceiro) => (
-              <div key={parceiro.nome} className="flex flex-col items-start">
-                {parceiro.apoio && (
-                  <span className="text-sm text-gray-600 font-medium mb-1">
-                    Apoio:
-                  </span>
-                )}
-                <div
-                  className={`relative ${
-                    parceiro.destaque ? "h-28 w-60" : "h-20 w-40"
-                  }`}
-                  title={parceiro.nome}
-                >
-                  <Image
-                    src={parceiro.logo}
-                    alt={`Logo da ${parceiro.nome}`}
-                    fill
-                    style={{ objectFit: "contain" }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+    <div className="w-full space-y-20 py-10">
+      {/* Linha 01: Parceiros Acadêmicos e Técnicos (Cientista chefe, Cepas, UFC) */}
+      <div className="flex flex-wrap justify-center items-center gap-16 md:gap-28">
+        <div className="flex items-center justify-center">
+          <Image
+            src="/logos/cientista-chefe.png"
+            alt="Cientista Chefe"
+            width={240}
+            height={80}
+            className="h-16 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
+          />
+        </div>
+        <div className="flex items-center justify-center border-x px-12 border-border/40">
+          <Image
+            src="/logos/cepas.png"
+            alt="CEPAS"
+            width={160}
+            height={80}
+            className="h-20 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
+          />
+        </div>
+        <div className="flex items-center justify-center">
+          <Image
+            src="/logos/ufc-h.png"
+            alt="UFC"
+            width={200}
+            height={80}
+            className="h-20 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
+          />
+        </div>
+      </div>
+
+      {/* Linha 02: Órgãos Gestores e Governo (Cogerh, funceme, funcap, Governo) */}
+      <div className="flex flex-col xl:flex-row justify-center items-center gap-16 md:gap-24">
+        {/* Grupo das Vinculadas */}
+        <div className="flex flex-wrap justify-center items-center gap-12 md:gap-16">
+          <Image
+            src="/logos/cogerh.png"
+            alt="COGERH"
+            width={180}
+            height={70}
+            className="h-20 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
+          />
+          <Image
+            src="/logos/funceme.png"
+            alt="FUNCEME"
+            width={180}
+            height={70}
+            className="h-20 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
+          />
+          <Image
+            src="/logos/funcap.png"
+            alt="FUNCAP"
+            width={180}
+            height={70}
+            className="h-20 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
+          />
+        </div>
+
+        {/* Logo do Governo - Em destaque e maior */}
+        <div className="pt-8 xl:pt-0 xl:border-l xl:pl-20 border-border/40">
+          <Image
+            src="/logos/srh-h.png"
+            alt="Governo do Estado do Ceará"
+            width={520}
+            height={180}
+            className="h-25 w-auto max-h-44 md:max-h-52 dark:invert brightness-110"
+          />
+        </div>
+      </div>
+    </div>
   );
 }
