@@ -5,7 +5,7 @@ import { ChartDataPoint } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button"; // Importar Button
 import { config } from "@/config"; // Importar config
-import { RefreshCw } from "lucide-react"; // Importar ícone
+import { RefreshCw, Info } from "lucide-react"; // Importar ícone
 import {
   LineChart,
   Line,
@@ -16,6 +16,12 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import {
+  Tooltip as ShadcnTooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
 
@@ -101,6 +107,21 @@ export function VolumeChart({
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle>📈 Volume (Hm³) comparado com Metas</CardTitle>
 
+        <TooltipProvider>
+          <ShadcnTooltip>
+            <TooltipTrigger asChild>
+              <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[280px]">
+              <p>
+                As **Metas** representam os volumes esperados (em porcentagem da
+                capacidade total) para diferentes cenários de operação e
+                planejamento hídrico.
+              </p>
+            </TooltipContent>
+          </ShadcnTooltip>
+        </TooltipProvider>
+
         {/* Renderiza o botão apenas se o reservatorioId for passado */}
         {reservatorioId && (
           <Button
@@ -133,7 +154,12 @@ export function VolumeChart({
                 tickFormatter={(str) => {
                   try {
                     const date = new Date(str);
-                    return format(date, "d 'de' MMM.", { locale: ptBR });
+                    return date
+                      .toLocaleDateString("pt-BR", {
+                        month: "short",
+                        year: "numeric",
+                      })
+                      .replace(". de ", "/");
                   } catch (e) {
                     return str;
                   }
@@ -211,6 +237,39 @@ export function VolumeChart({
               />
             </LineChart>
           </ResponsiveContainer>
+        </div>
+        <div className="bg-muted/30 p-4 rounded-lg border border-border/50 text-sm space-y-2">
+          <div className="flex items-center gap-2 font-semibold text-foreground">
+            <Info className="h-4 w-4" />
+            <span>OBS: Entenda as Metas</span>
+          </div>
+          <p className="text-muted-foreground leading-relaxed">
+            As linhas tracejadas representam o planejamento de volume para o
+            reservatório:
+          </p>
+          <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <li className="flex items-start gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#991b1b] mt-1 shrink-0" />
+              <span>
+                <strong>Meta 1 (Operação):</strong> Volume ideal para garantir o
+                pleno atendimento às demandas.
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#b45309] mt-1 shrink-0" />
+              <span>
+                <strong>Meta 2 (Atenção):</strong> Limite de alerta; pode
+                indicar necessidade de restrição parcial.
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#ca8a04] mt-1 shrink-0" />
+              <span>
+                <strong>Meta 3 (Crítico):</strong> Nível de escassez severa;
+                requer medidas de contingenciamento.
+              </span>
+            </li>
+          </ul>
         </div>
       </CardContent>
     </Card>
