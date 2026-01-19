@@ -31,7 +31,7 @@ export default function HomePage() {
       <section className="flex flex-col md:flex-row items-center gap-8 py-8 md:py-16">
         <div className="flex-1 space-y-6">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
-            Sistema de Apoio à Decisão de Gestão de Secas
+            Sistema de Apoio à Decisão de Gestão de Secas em Hidrossistemas
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed text-justify">
             Uma plataforma integrada desenvolvida para o monitoramento,

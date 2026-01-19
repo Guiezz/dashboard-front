@@ -10,19 +10,16 @@ import {
 } from "@/components/ui/select";
 
 export function ReservoirSelector() {
-  const { 
-    reservatorios, 
-    selectedReservoir, 
-    setSelectedReservoir, 
-    isLoading 
-  } = useReservoir();
+  const { reservatorios, selectedReservoir, setSelectedReservoir, isLoading } =
+    useReservoir();
 
   if (isLoading) {
     return <div className="text-white text-sm">Carregando...</div>;
   }
 
   const handleSelectChange = (reservoirId: string) => {
-    const reservoir = reservatorios.find(r => r.id === parseInt(reservoirId, 10)) || null;
+    const reservoir =
+      reservatorios.find((r) => r.id === parseInt(reservoirId, 10)) || null;
     setSelectedReservoir(reservoir);
   };
 
@@ -31,6 +28,7 @@ export function ReservoirSelector() {
       onValueChange={handleSelectChange}
       value={selectedReservoir ? String(selectedReservoir.id) : ""}
     >
+      <p>Hidrossistema: </p>
       <SelectTrigger className="w-[280px]">
         <SelectValue placeholder="Selecione um reservatório" />
       </SelectTrigger>
