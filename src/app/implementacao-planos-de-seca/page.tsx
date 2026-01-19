@@ -37,10 +37,6 @@ export default function EstadoDeSecaPage() {
           fetch(`${config.apiBaseUrl}/reservatorios/${id}/dashboard/summary`, {
             cache: "no-store",
           }),
-          // Note: Removi history e chart daqui pois não estão sendo usados neste componente específico (baseado no código original fornecido)
-          // Se forem necessários, descomente e ajuste:
-          // fetch(`${config.apiBaseUrl}/reservatorios/${id}/history`, { cache: "no-store" }),
-          // fetch(`${config.apiBaseUrl}/reservatorios/${id}/dashboard/volume-chart`, { cache: "no-store" }),
 
           fetch(`${config.apiBaseUrl}/reservatorios/${id}/ongoing-actions`, {
             cache: "no-store",

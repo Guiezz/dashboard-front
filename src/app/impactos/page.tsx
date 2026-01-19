@@ -95,9 +95,9 @@ export default function ImpactosPage() {
             </CardHeader>
             <CardContent className="space-y-4 text-muted-foreground">
               <p>
-                As perguntas formuladas neste questionário procuram obter
-                informações sobre a percepção pessoal do impacto das secas no
-                cotidiano individual, familiar e no trabalho dos participantes.
+                Este formulário tem o objetivo de obter informações sobre a
+                percepção pessoal do impacto das secas no cotidiano individual,
+                familiar e no trabalho dos participantes.
               </p>
               <p>
                 A sua participação é de grande importância para podermos
