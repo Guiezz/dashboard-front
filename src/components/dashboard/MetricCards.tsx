@@ -1,26 +1,32 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Gauge, Activity, CalendarDays, ShieldCheck } from "lucide-react";
+import { Gauge, CalendarDays, ShieldCheck } from "lucide-react";
 import type { DashboardSummary } from "@/lib/types";
+import {
+  DroughtGauge,
+  GaugeThresholds,
+} from "@/components/dashboard/DroughtGauge";
 
 interface MetricCardsProps {
   summary: DashboardSummary;
-  // Novas props para corrigir o Tempo no Estado
   calculatedDays?: number;
   sinceDate?: string;
+  thresholds?: GaugeThresholds;
 }
 
 export function MetricCards({
   summary,
   calculatedDays,
   sinceDate,
+  thresholds,
 }: MetricCardsProps) {
-  // Se calculatedDays for passado, usa ele. Caso contrário, tenta usar o do summary.
-  // Se ambos forem indefinidos, mostra 0.
   const diasNoEstado = calculatedDays ?? summary.diasDesdeUltimaMudanca ?? 0;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-      <Card>
+      {/* CARD 1: VOLUME */}
+      <Card className="flex flex-col justify-between">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
             Volume Atual (hm³)
@@ -34,19 +40,21 @@ export function MetricCards({
           </p>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Estado da Seca</CardTitle>
-          <Activity className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{summary.estadoAtualSeca}</div>
-          <p className="text-xs text-muted-foreground">
-            Classificação atual do sistema
-          </p>
+
+      {/* CARD 2: GAUGE (RELÓGIO) */}
+      <Card className="flex flex-col justify-center overflow-hidden">
+        {/* Padding ajustado para o novo SVG */}
+        <CardContent className="p-0 pb-4 pt-6 flex items-center justify-center">
+          <DroughtGauge
+            currentState={summary.estadoAtualSeca}
+            percentage={summary.volumePercentual}
+            thresholds={thresholds}
+          />
         </CardContent>
       </Card>
-      <Card>
+
+      {/* CARD 3: TEMPO NO ESTADO */}
+      <Card className="flex flex-col justify-between">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Tempo no Estado</CardTitle>
           <CalendarDays className="h-4 w-4 text-muted-foreground" />
@@ -54,12 +62,13 @@ export function MetricCards({
         <CardContent>
           <div className="text-2xl font-bold">{diasNoEstado} dias</div>
           <p className="text-xs text-muted-foreground">
-            {/* Correção: Exibe a data de início se fornecida */}
-            {sinceDate ? `Desde ${sinceDate}` : "Data de início não disponível"}
+            {sinceDate ? `Desde ${sinceDate}` : "Data não disponível"}
           </p>
         </CardContent>
       </Card>
-      <Card>
+
+      {/* CARD 4: MEDIDAS ATIVAS */}
+      <Card className="flex flex-col justify-between">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Medidas Ativas</CardTitle>
           <ShieldCheck className="h-4 w-4 text-muted-foreground" />
