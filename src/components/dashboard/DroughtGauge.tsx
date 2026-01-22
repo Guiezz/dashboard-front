@@ -14,14 +14,14 @@ interface DroughtGaugeProps {
   thresholds?: GaugeThresholds;
 }
 
-// --- Funções Auxiliares SVG ---
+// --- Funções Auxiliares SVG (Mantidas iguais) ---
 function polarToCartesian(
   centerX: number,
   centerY: number,
   radius: number,
   angleInDegrees: number,
 ) {
-  var angleInRadians = (angleInDegrees * Math.PI) / 180.0;
+  const angleInRadians = (angleInDegrees * Math.PI) / 180.0;
   return {
     x: centerX + radius * Math.cos(angleInRadians),
     y: centerY + radius * Math.sin(angleInRadians),
@@ -35,12 +35,11 @@ function describeArc(
   startAngle: number,
   endAngle: number,
 ) {
-  // Se os ângulos forem iguais, não desenha nada
   if (startAngle >= endAngle) return "";
 
-  var start = polarToCartesian(x, y, radius, endAngle);
-  var end = polarToCartesian(x, y, radius, startAngle);
-  var largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+  const start = polarToCartesian(x, y, radius, endAngle);
+  const end = polarToCartesian(x, y, radius, startAngle);
+  const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
 
   return [
     "M",
@@ -73,19 +72,32 @@ export function DroughtGauge({
   const startAngle = 180; // 9 horas
   const totalAngle = 180; // Semicírculo
 
-  // 1. Definição das Metas (Com proteção contra zeros)
-  let m1 = thresholds?.meta1 ?? 0;
-  let m2 = thresholds?.meta2 ?? 0;
-  let m3 = thresholds?.meta3 ?? 0;
+  // 1. Definição das Metas (CORREÇÃO DE ORDENAÇÃO)
+  // Coletamos os valores brutos
+  const rawThresholds = [
+    thresholds?.meta1 ?? 0,
+    thresholds?.meta2 ?? 0,
+    thresholds?.meta3 ?? 0,
+  ];
 
-  // SE todas forem zero (dado inválido), força um padrão visual
-  if (m1 <= 0.1 && m2 <= 0.1 && m3 <= 0.1) {
+  // Ordenamos do MENOR para o MAIOR.
+  // [0] = Menor valor (Limite do Vermelho)
+  // [1] = Valor médio (Limite do Laranja)
+  // [2] = Maior valor (Limite do Amarelo)
+  const sortedValues = rawThresholds.sort((a, b) => a - b);
+
+  let m1 = sortedValues[0] * 100; // Limite Crítico
+  let m2 = sortedValues[1] * 100; // Limite Seca
+  let m3 = sortedValues[2] * 100; // Limite Alerta
+
+  // Fallback de segurança: se o maior valor for quase zero, aplica padrão
+  if (m3 <= 0.1) {
     m1 = 20;
     m2 = 40;
     m3 = 60;
   }
 
-  // Garante a ordem crescente para o empilhamento funcionar (m1 < m2 < m3)
+  // A ordenação acima já garante m1 <= m2 <= m3, mas mantemos o Max por segurança
   m1 = Math.max(0, m1);
   m2 = Math.max(m1, m2);
   m3 = Math.max(m2, m3);
@@ -128,11 +140,9 @@ export function DroughtGauge({
         className="overflow-visible"
       >
         {/* ESTRATÉGIA DE EMPILHAMENTO (LAYERING) */}
-        {/* Desenhamos do MAIOR para o MENOR. O menor fica por cima. */}
+        {/* Desenhamos do MAIOR para o MENOR para que o menor fique "por cima" */}
 
-        {/* 1. Base: Verde (Conforto) - Vai do início até o fim (ou começa na M3 se preferir segmento, mas empilhado é mais seguro) */}
-        {/* Aqui desenhamos o arco completo de 0 a 100 como base verde? Não, desenhamos o segmento verde de M3 a 100. */}
-        {/* Mas para corrigir o bug visual, vamos desenhar o verde APENAS se houver espaço para ele */}
+        {/* 1. Base: Verde (Conforto) - Do fim do Amarelo até 100% */}
         <path
           d={describeArc(cx, cy, radius, angleYellow, angleGreen)}
           fill="none"
@@ -140,8 +150,7 @@ export function DroughtGauge({
           strokeWidth={strokeWidth}
         />
 
-        {/* 2. Amarelo (Alerta) - Desenhamos de 0 até M3? Não, de M2 até M3. */}
-        {/* Se usarmos segmentos exatos (Start->End) agora com os dados corrigidos (defaults), não haverá sobreposição errada. */}
+        {/* 2. Amarelo (Alerta) - Do fim do Laranja até o fim do Amarelo */}
         <path
           d={describeArc(cx, cy, radius, angleOrange, angleYellow)}
           fill="none"
@@ -149,7 +158,7 @@ export function DroughtGauge({
           strokeWidth={strokeWidth}
         />
 
-        {/* 3. Laranja (Seca) - De M1 até M2 */}
+        {/* 3. Laranja (Seca) - Do fim do Vermelho até o fim do Laranja */}
         <path
           d={describeArc(cx, cy, radius, angleRed, angleOrange)}
           fill="none"
@@ -157,7 +166,7 @@ export function DroughtGauge({
           strokeWidth={strokeWidth}
         />
 
-        {/* 4. Vermelho (Crítico) - De 0 até M1. Desenhado por último, garante prioridade visual. */}
+        {/* 4. Vermelho (Crítico) - Do zero até o fim do Vermelho */}
         <path
           d={describeArc(cx, cy, radius, startAngle, angleRed)}
           fill="none"

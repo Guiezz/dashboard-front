@@ -251,8 +251,8 @@ export function VolumeChart({
             <li className="flex items-start gap-2">
               <span className="w-2 h-2 rounded-full bg-[#991b1b] mt-1 shrink-0" />
               <span>
-                <strong>Meta 1 (Operação):</strong> Volume ideal para garantir o
-                pleno atendimento às demandas.
+                <strong>Meta 1 (Crítico):</strong> Nível de escassez severa;
+                requer medidas de contingenciamento.
               </span>
             </li>
             <li className="flex items-start gap-2">
@@ -265,8 +265,8 @@ export function VolumeChart({
             <li className="flex items-start gap-2">
               <span className="w-2 h-2 rounded-full bg-[#ca8a04] mt-1 shrink-0" />
               <span>
-                <strong>Meta 3 (Crítico):</strong> Nível de escassez severa;
-                requer medidas de contingenciamento.
+                <strong>Meta 3 (Operação):</strong>
+                Volume ideal para garantir o pleno atendimento às demandas.
               </span>
             </li>
           </ul>
