@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { ChartDataPoint } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button"; // Importar Button
-import { config } from "@/config"; // Importar config
-import { RefreshCw, Info } from "lucide-react"; // Importar ícone
+import { Button } from "@/components/ui/button";
+import { config } from "@/config";
+import { RefreshCw, Info } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -27,13 +27,15 @@ import { ptBR } from "date-fns/locale/pt-BR";
 
 interface VolumeChartProps {
   data: ChartDataPoint[];
-  reservatorioId?: number; // Novo prop necessário para a API
-  onRefresh?: () => void; // Callback para recarregar os dados após o update
+  reservatorioId?: number;
+  capacidadeMaxima?: number; // 1. Nova prop adicionada
+  onRefresh?: () => void;
 }
 
 export function VolumeChart({
   data,
   reservatorioId,
+  capacidadeMaxima, // 2. Recebendo a prop
   onRefresh,
 }: VolumeChartProps) {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -46,7 +48,6 @@ export function VolumeChart({
     meta3: point.meta3 * 100,
   }));
 
-  // Função para chamar a rota POST da FUNCEME
   const handleUpdateData = async () => {
     if (!reservatorioId) return;
 
@@ -64,9 +65,8 @@ export function VolumeChart({
       }
 
       const result = await response.json();
-      alert(result.status || "Dados atualizados com sucesso!"); // Pode substituir por um Toast se tiver configurado
+      alert(result.status || "Dados atualizados com sucesso!");
 
-      // Chama a função do pai para recarregar o gráfico
       if (onRefresh) {
         onRefresh();
       }
@@ -122,7 +122,6 @@ export function VolumeChart({
           </ShadcnTooltip>
         </TooltipProvider>
 
-        {/* Renderiza o botão apenas se o reservatorioId for passado */}
         {reservatorioId && (
           <Button
             variant="outline"
@@ -166,11 +165,14 @@ export function VolumeChart({
                 }}
                 tick={{ fontSize: 11, fill: "#6b7280" }}
               />
+
+              {/* 3. Configuração do Eixo Y Esquerdo com domínio fixo */}
               <YAxis
                 yAxisId="left"
                 tick={{ fontSize: 12, fill: "#6b7280" }}
                 width={50}
-                domain={[0, "auto"]}
+                // Se capacidadeMaxima existir, usa [0, capacidadeMaxima], senão "auto"
+                domain={[0, capacidadeMaxima || "auto"]}
                 label={{
                   value: "Volume (Hm³)",
                   angle: -90,
@@ -178,6 +180,7 @@ export function VolumeChart({
                   fill: "#6b7280",
                 }}
               />
+
               <YAxis
                 yAxisId="right"
                 orientation="right"

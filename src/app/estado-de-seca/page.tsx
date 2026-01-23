@@ -178,9 +178,9 @@ export default function EstadoDeSecaPage() {
 
     // Converte Volume Absoluto (hm3) para Porcentagem (%) com precisão
     gaugeThresholds = {
-      meta1: (lastPoint.meta1 / capacidadeTotal) * 100,
-      meta2: (lastPoint.meta2 / capacidadeTotal) * 100,
-      meta3: (lastPoint.meta3 / capacidadeTotal) * 100,
+      meta1: lastPoint.meta1,
+      meta2: lastPoint.meta2,
+      meta3: lastPoint.meta3,
     };
   }
 
@@ -208,6 +208,7 @@ export default function EstadoDeSecaPage() {
           <VolumeChart
             data={chart}
             reservatorioId={selectedReservoir?.id}
+            capacidadeMaxima={capacidadeTotal}
             onRefresh={fetchData}
           />
         </div>
