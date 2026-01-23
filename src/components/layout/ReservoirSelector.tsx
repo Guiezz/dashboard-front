@@ -24,21 +24,28 @@ export function ReservoirSelector() {
   };
 
   return (
-    <Select
-      onValueChange={handleSelectChange}
-      value={selectedReservoir ? String(selectedReservoir.id) : ""}
-    >
-      <p>Hidrossistema: </p>
-      <SelectTrigger className="w-[280px]">
-        <SelectValue placeholder="Selecione um reservatório" />
-      </SelectTrigger>
-      <SelectContent>
-        {reservatorios.map((reservoir) => (
-          <SelectItem key={reservoir.id} value={String(reservoir.id)}>
-            {reservoir.nome}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="flex items-center gap-2">
+      {/* Opcional: Se quiser manter o label "Hidrossistema:" fora, deixe aqui.
+          Se quiser só o dropdown, pode remover o <p> */}
+      <p className="hidden md:block text-sm font-medium">Hidrossistema:</p>
+
+      <Select
+        onValueChange={handleSelectChange}
+        // Se for null, passa string vazia "" para mostrar o placeholder
+        value={selectedReservoir ? String(selectedReservoir.id) : ""}
+      >
+        <SelectTrigger className="w-[280px]">
+          {/* Aqui mudamos o texto padrão quando nada está selecionado */}
+          <SelectValue placeholder="Selecione o hidrossistema" />
+        </SelectTrigger>
+        <SelectContent>
+          {reservatorios.map((reservoir) => (
+            <SelectItem key={reservoir.id} value={String(reservoir.id)}>
+              {reservoir.nome}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

@@ -4,13 +4,18 @@ import { useState, useEffect } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
 import { config } from "@/config";
 
-// Adicionado HistoryEntry aos imports
-import { DashboardSummary, PlanoAcao, HistoryEntry } from "@/lib/types";
+import {
+  DashboardSummary,
+  PlanoAcao,
+  HistoryEntry,
+  ChartDataPoint, // <--- 1. Importar o tipo do gráfico
+} from "@/lib/types";
 import { MetricCards } from "@/components/dashboard/MetricCards";
 import { PaginatedTableMedidas } from "@/components/dashboard/PaginatedTableMedidas";
 import { ActionStatusTabs } from "@/components/dashboard/ActionStatusTabs";
+import { GaugeThresholds } from "@/components/dashboard/DroughtGauge";
 
-// Função auxiliar para converter strings de data (igual à outra página)
+// Função auxiliar para converter strings de data
 function parseDate(dateStr: string): Date {
   if (dateStr.includes("/")) {
     const [day, month, year] = dateStr.split("/").map(Number);
@@ -19,7 +24,7 @@ function parseDate(dateStr: string): Date {
   return new Date(dateStr);
 }
 
-export default function EstadoDeSecaPage() {
+export default function ImplementacaoPlanosPage() {
   const { selectedReservoir, isLoading: isReservoirLoading } = useReservoir();
 
   const [isLoadingPage, setIsLoadingPage] = useState(true);
@@ -29,7 +34,15 @@ export default function EstadoDeSecaPage() {
   const [ongoingActions, setOngoingActions] = useState<PlanoAcao[]>([]);
   const [completedActions, setCompletedActions] = useState<PlanoAcao[]>([]);
 
-  // Novos estados para o cálculo de tempo (Adicionado)
+  // 2. Estado para armazenar os dados do gráfico (necessário para pegar as metas atuais)
+  const [chart, setChart] = useState<ChartDataPoint[]>([]);
+
+  // Estado para passar as metas calculadas para o Card
+  const [currentThresholds, setCurrentThresholds] = useState<
+    GaugeThresholds | undefined
+  >(undefined);
+
+  // Estados para o cálculo de tempo
   const [daysInState, setDaysInState] = useState<number>(0);
   const [sinceDate, setSinceDate] = useState<string>("");
 
@@ -45,14 +58,12 @@ export default function EstadoDeSecaPage() {
       const id = selectedReservoir.id;
 
       try {
-        // Adicionada a busca do histórico (historyRes)
-        const [summaryRes, historyRes, ongoingRes, completedRes] =
+        // 3. Adicionado o fetch do 'volume-chart' para obter as metas mais recentes
+        const [summaryRes, historyRes, ongoingRes, completedRes, chartRes] =
           await Promise.all([
             fetch(
               `${config.apiBaseUrl}/reservatorios/${id}/dashboard/summary`,
-              {
-                cache: "no-store",
-              },
+              { cache: "no-store" },
             ),
             fetch(`${config.apiBaseUrl}/reservatorios/${id}/history`, {
               cache: "no-store",
@@ -62,9 +73,11 @@ export default function EstadoDeSecaPage() {
             }),
             fetch(
               `${config.apiBaseUrl}/reservatorios/${id}/completed-actions`,
-              {
-                cache: "no-store",
-              },
+              { cache: "no-store" },
+            ),
+            fetch(
+              `${config.apiBaseUrl}/reservatorios/${id}/dashboard/volume-chart`,
+              { cache: "no-store" },
             ),
           ]);
 
@@ -72,19 +85,37 @@ export default function EstadoDeSecaPage() {
           !summaryRes.ok ||
           !historyRes.ok ||
           !ongoingRes.ok ||
-          !completedRes.ok
+          !completedRes.ok ||
+          !chartRes.ok
         ) {
           throw new Error("Falha ao buscar os dados do reservatório.");
         }
 
         const summaryData = await summaryRes.json();
         const historyData: HistoryEntry[] = await historyRes.json();
+        const chartData: ChartDataPoint[] = await chartRes.json();
 
         setSummary(summaryData);
         setOngoingActions(await ongoingRes.json());
         setCompletedActions(await completedRes.json());
+        setChart(chartData);
 
-        // --- LÓGICA DE CÁLCULO DO TEMPO NO ESTADO (Adicionada) ---
+        // --- 4. CÁLCULO DAS METAS (GAUGE) ---
+        if (chartData.length > 0) {
+          const lastPoint = chartData[chartData.length - 1];
+
+          // CORREÇÃO: Usar os valores diretos (0.104), sem dividir pela capacidade.
+          // O componente DroughtGauge já espera decimais e multiplica por 100.
+          setCurrentThresholds({
+            meta1: lastPoint.meta1,
+            meta2: lastPoint.meta2,
+            meta3: lastPoint.meta3,
+          });
+        } else {
+          setCurrentThresholds(undefined);
+        }
+
+        // --- LÓGICA DE CÁLCULO DO TEMPO NO ESTADO ---
         if (historyData && historyData.length > 0) {
           const sortedHistory = [...historyData];
           const currentEntry = sortedHistory[sortedHistory.length - 1];
@@ -150,6 +181,7 @@ export default function EstadoDeSecaPage() {
       </main>
     );
   }
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
       <div className="flex items-center">
@@ -159,16 +191,13 @@ export default function EstadoDeSecaPage() {
         </h1>
       </div>
 
-      {/* Adicionado as props calculatedDays e sinceDate */}
       <MetricCards
         summary={summary}
         calculatedDays={daysInState}
         sinceDate={sinceDate}
+        thresholds={currentThresholds}
       />
 
-      <div className="grid gap-4 md:gap-8 lg:grid-cols-1 xl:grid-cols-3">
-        {/* Placeholder para conteúdo futuro se necessário */}
-      </div>
       <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
         <PaginatedTableMedidas
           data={summary.medidasRecomendadas}
