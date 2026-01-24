@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
-import { config } from "@/config"; // <--- Importar config
+import { config } from "@/config";
 import { UsoAgua, IdentificationData } from "@/lib/types";
 import { UsoAguaChart } from "@/components/usos/UsoAguaChart";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
+import { EmptyReservoirState } from "@/components/dashboard/EmptyReservoirState";
 
 export default function UsosAguaPage() {
   const { selectedReservoir } = useReservoir();
@@ -25,8 +26,9 @@ export default function UsosAguaPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Se não houver reservatório selecionado, paramos o loading e não fazemos o fetch
     if (!selectedReservoir) {
-      setIsLoading(true);
+      setIsLoading(false);
       return;
     }
 
@@ -36,7 +38,6 @@ export default function UsosAguaPage() {
       try {
         const id = selectedReservoir.id;
 
-        // CORREÇÃO: Usando config.apiBaseUrl e rota "/water-uses"
         const [usosRes, idRes] = await Promise.all([
           fetch(`${config.apiBaseUrl}/reservatorios/${id}/water-uses`),
           fetch(`${config.apiBaseUrl}/reservatorios/${id}/identification`),
@@ -66,6 +67,17 @@ export default function UsosAguaPage() {
     fetchData();
   }, [selectedReservoir]);
 
+  // 1. ESTADO: NADA SELECIONADO
+  if (!selectedReservoir) {
+    return (
+      <EmptyReservoirState
+        title="Análise de Uso da Água indisponível"
+        description="Por favor, selecione um hidrossistema no topo da página para visualizar o diagrama de usos e os dados de consumo."
+      />
+    );
+  }
+
+  // 2. ESTADO: CARREGANDO
   if (isLoading) {
     return (
       <main className="flex flex-1 items-center justify-center">
@@ -79,11 +91,12 @@ export default function UsosAguaPage() {
     );
   }
 
+  // 3. ESTADO: ERRO NA API
   if (error || !chartData || !identificationData) {
     return (
       <main className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-500">
+        <div className="text-center p-6 bg-card border rounded-xl shadow-sm">
+          <h1 className="text-2xl font-semibold text-destructive mb-2">
             Erro ao carregar os dados da página.
           </h1>
           <p>{error || "Verifique o console para mais detalhes."}</p>
@@ -92,6 +105,7 @@ export default function UsosAguaPage() {
     );
   }
 
+  // 4. ESTADO: SUCESSO
   return (
     <main className="p-4 md:p-8 lg:p-10">
       <div className="flex items-center mb-6">
@@ -116,8 +130,8 @@ export default function UsosAguaPage() {
                   <Image
                     src={identificationData.url_imagem_usos}
                     alt={`Diagrama de usos da água do açude ${identificationData.nome}`}
-                    layout="fill"
-                    objectFit="contain"
+                    fill
+                    style={{ objectFit: "contain" }}
                     className="rounded-md"
                   />
                 </div>

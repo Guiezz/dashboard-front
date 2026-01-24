@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
 import { config } from "@/config";
@@ -6,7 +7,8 @@ import { Responsavel } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Parceiros } from "@/components/responsaveis/Parceiros";
-import { Users2, Building2 } from "lucide-react";
+import { Users2, Building2, Loader2 } from "lucide-react";
+import { EmptyReservoirState } from "@/components/dashboard/EmptyReservoirState";
 
 // Tipo para a estrutura de dados agrupada
 type GroupedData = {
@@ -88,7 +90,6 @@ export default function ResponsaveisPage() {
       "EQUIPE DE ELABORAÇÃO",
       "COMUNICAÇÃO VISUAL – CEPAS/UFC/FUNCAP",
     ],
-
     "Equipe de Projeto": [
       "COORDENAÇÃO GERAL",
       "FUNCAP/UFC",
@@ -109,7 +110,7 @@ export default function ResponsaveisPage() {
 
   useEffect(() => {
     if (!selectedReservoir) {
-      setIsLoading(true);
+      setIsLoading(false);
       return;
     }
 
@@ -125,11 +126,8 @@ export default function ResponsaveisPage() {
 
         const grouped = data.reduce<GroupedData>((acc, responsavel) => {
           const grupo = responsavel.grupo || "Outros Grupos";
-
-          // LÓGICA CORRIGIDA: Para Comissões Gestoras, usamos APENAS o SETOR como chave
           let orgChave: string;
 
-          // Verifica se o grupo OU a organização contém "COMISSÃO GESTORA"
           const isComissaoGestora =
             grupo.toUpperCase().includes("COMISSÃO GESTORA") ||
             (responsavel.organizacao &&
@@ -138,10 +136,8 @@ export default function ResponsaveisPage() {
                 .includes("COMISSÃO GESTORA"));
 
           if (isComissaoGestora && responsavel.setor) {
-            // Para comissões gestoras: usa o setor como chave principal
             orgChave = responsavel.setor;
           } else {
-            // Para outros grupos: usa a organização normalmente
             orgChave = responsavel.organizacao || "Geral";
           }
 
@@ -163,16 +159,45 @@ export default function ResponsaveisPage() {
     getResponsaveisData();
   }, [selectedReservoir]);
 
-  if (isLoading)
+  // 1. ESTADO: NADA SELECIONADO
+  if (!selectedReservoir) {
     return (
-      <div className="p-12 text-center animate-pulse">
-        Carregando estrutura de responsáveis...
-      </div>
+      <EmptyReservoirState
+        title="Estrutura de Responsáveis Indisponível"
+        description="Por favor, selecione um hidrossistema no seletor acima para visualizar as instituições e técnicos responsáveis."
+      />
     );
-  if (error)
+  }
+
+  // 2. ESTADO: CARREGANDO
+  if (isLoading) {
     return (
-      <div className="p-12 text-center text-destructive">Erro: {error}</div>
+      <main className="flex flex-1 items-center justify-center p-12">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-muted-foreground animate-pulse">
+            Carregando estrutura de responsáveis...
+          </p>
+        </div>
+      </main>
     );
+  }
+
+  // 3. ESTADO: ERRO NA API
+  if (error) {
+    return (
+      <main className="flex flex-1 items-center justify-center p-8">
+        <div className="text-center p-8 bg-card border rounded-xl shadow-sm max-w-lg">
+          <h1 className="text-2xl font-semibold text-destructive mb-2">
+            Erro ao carregar responsáveis
+          </h1>
+          <p className="text-muted-foreground">
+            Ocorreu um problema ao buscar a estrutura institucional: {error}
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   const sortedGrupos = Object.keys(groupedData).sort((a, b) => {
     const indexA = grupoDisplayOrder.indexOf(a);
@@ -183,6 +208,7 @@ export default function ResponsaveisPage() {
     return indexA - indexB;
   });
 
+  // 4. ESTADO: SUCESSO
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-10 max-w-7xl">
       <div className="space-y-2">
@@ -191,7 +217,10 @@ export default function ResponsaveisPage() {
         </h1>
         <p className="text-muted-foreground">
           Estrutura institucional e equipe técnica envolvida na gestão do{" "}
-          {selectedReservoir?.nome}.
+          <span className="font-semibold text-foreground">
+            {selectedReservoir.nome}
+          </span>
+          .
         </p>
       </div>
 
@@ -209,7 +238,6 @@ export default function ResponsaveisPage() {
           return indexA - indexB;
         });
 
-        // Verifica se é uma comissão gestora para ajustar a exibição
         const isComissaoGestora = grupo
           .toUpperCase()
           .includes("COMISSÃO GESTORA");
@@ -228,19 +256,15 @@ export default function ResponsaveisPage() {
                 const membros = organizacoes[orgChave];
                 const primeiroMembro = membros[0];
 
-                // Define o título e badge baseado no tipo
                 let tituloCard = orgChave;
                 let badgeTexto = null;
 
                 if (isComissaoGestora) {
-                  // Para comissões gestoras: o título é o setor
-                  tituloCard = orgChave; // já é o setor
-                  // Não mostra badge da organização pois é repetitiva
+                  tituloCard = orgChave;
                 } else if (
                   primeiroMembro?.setor &&
                   primeiroMembro.setor !== orgChave
                 ) {
-                  // Para outros casos: mostra o setor como badge se existir
                   badgeTexto = primeiroMembro.setor;
                 }
 

@@ -8,12 +8,14 @@ import {
   DashboardSummary,
   PlanoAcao,
   HistoryEntry,
-  ChartDataPoint, // <--- 1. Importar o tipo do gráfico
+  ChartDataPoint,
 } from "@/lib/types";
 import { MetricCards } from "@/components/dashboard/MetricCards";
 import { PaginatedTableMedidas } from "@/components/dashboard/PaginatedTableMedidas";
 import { ActionStatusTabs } from "@/components/dashboard/ActionStatusTabs";
 import { GaugeThresholds } from "@/components/dashboard/DroughtGauge";
+import { Loader2 } from "lucide-react";
+import { EmptyReservoirState } from "@/components/dashboard/EmptyReservoirState";
 
 // Função auxiliar para converter strings de data
 function parseDate(dateStr: string): Date {
@@ -34,7 +36,7 @@ export default function ImplementacaoPlanosPage() {
   const [ongoingActions, setOngoingActions] = useState<PlanoAcao[]>([]);
   const [completedActions, setCompletedActions] = useState<PlanoAcao[]>([]);
 
-  // 2. Estado para armazenar os dados do gráfico (necessário para pegar as metas atuais)
+  // Estado para armazenar os dados do gráfico
   const [chart, setChart] = useState<ChartDataPoint[]>([]);
 
   // Estado para passar as metas calculadas para o Card
@@ -47,8 +49,9 @@ export default function ImplementacaoPlanosPage() {
   const [sinceDate, setSinceDate] = useState<string>("");
 
   useEffect(() => {
+    // Se não houver reservatório, paramos o loading para mostrar o EmptyState
     if (!selectedReservoir) {
-      setIsLoadingPage(isReservoirLoading);
+      setIsLoadingPage(false);
       return;
     }
 
@@ -58,7 +61,6 @@ export default function ImplementacaoPlanosPage() {
       const id = selectedReservoir.id;
 
       try {
-        // 3. Adicionado o fetch do 'volume-chart' para obter as metas mais recentes
         const [summaryRes, historyRes, ongoingRes, completedRes, chartRes] =
           await Promise.all([
             fetch(
@@ -100,12 +102,9 @@ export default function ImplementacaoPlanosPage() {
         setCompletedActions(await completedRes.json());
         setChart(chartData);
 
-        // --- 4. CÁLCULO DAS METAS (GAUGE) ---
+        // --- CÁLCULO DAS METAS (GAUGE) ---
         if (chartData.length > 0) {
           const lastPoint = chartData[chartData.length - 1];
-
-          // CORREÇÃO: Usar os valores diretos (0.104), sem dividir pela capacidade.
-          // O componente DroughtGauge já espera decimais e multiplica por 100.
           setCurrentThresholds({
             meta1: lastPoint.meta1,
             meta2: lastPoint.meta2,
@@ -141,7 +140,6 @@ export default function ImplementacaoPlanosPage() {
           setDaysInState(diffDays);
           setSinceDate(startDate);
         }
-        // ---------------------------------------------------------
       } catch (err) {
         console.error(err);
         setError(
@@ -153,28 +151,41 @@ export default function ImplementacaoPlanosPage() {
     };
 
     fetchDataForReservoir();
-  }, [selectedReservoir, isReservoirLoading]);
+  }, [selectedReservoir]);
 
+  // 1. ESTADO: NADA SELECIONADO
+  if (!selectedReservoir) {
+    return (
+      <EmptyReservoirState
+        title="Implementação de Planos Indisponível"
+        description="Selecione um hidrossistema no topo da página para visualizar o resumo de métricas, medidas recomendadas e status das ações."
+      />
+    );
+  }
+
+  // 2. ESTADO: CARREGANDO
   if (isLoadingPage) {
     return (
       <main className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">
-            Carregando dados do reservatório...
-          </h1>
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">
+            Carregando dados da implementação...
+          </p>
         </div>
       </main>
     );
   }
 
+  // 3. ESTADO: ERRO
   if (error || !summary) {
     return (
       <main className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-500">
-            Erro ao carregar os dados.
+        <div className="text-center p-6 bg-card border rounded-xl shadow-sm">
+          <h1 className="text-2xl font-semibold text-destructive mb-2">
+            Erro ao carregar os dados
           </h1>
-          <p>
+          <p className="text-muted-foreground">
             {error || "Verifique se a API está em execução e tente novamente."}
           </p>
         </div>
@@ -182,12 +193,13 @@ export default function ImplementacaoPlanosPage() {
     );
   }
 
+  // 4. ESTADO: SUCESSO
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">
           Implementação nos planos de seca do reservatório:{" "}
-          {selectedReservoir?.nome}
+          <span className="text-primary">{selectedReservoir.nome}</span>
         </h1>
       </div>
 
