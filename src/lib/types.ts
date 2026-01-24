@@ -8,7 +8,7 @@ export interface Reservatorio {
   municipio: string;
 
   bacia?: string;
-  capacidade_hm3?: number;
+  capacidade_hm3: number;
 }
 
 export interface IdentificationData {

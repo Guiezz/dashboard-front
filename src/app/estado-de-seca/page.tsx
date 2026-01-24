@@ -7,6 +7,7 @@ import { config } from "@/config";
 import { DashboardSummary, HistoryEntry, ChartDataPoint } from "@/lib/types";
 import { VolumeChart } from "@/components/dashboard/VolumeChart";
 import { MetricCards } from "@/components/dashboard/MetricCards";
+import { GaugeThresholds } from "@/components/dashboard/DroughtGauge";
 import {
   Card,
   CardContent,
@@ -168,7 +169,21 @@ export default function EstadoDeSecaPage() {
     );
   }
 
-  // PEGA OS ÚLTIMOS 8 E INVERTE PARA MOSTRAR O MAIS RECENTE PRIMEIRO
+  let gaugeThresholds: GaugeThresholds | undefined = undefined;
+  // Pega direto do reservatório, sem conta matemática arriscada
+  const capacidadeTotal = selectedReservoir?.capacidade_hm3;
+
+  if (chart.length > 0 && capacidadeTotal && capacidadeTotal > 0) {
+    const lastPoint = chart[chart.length - 1];
+
+    // Converte Volume Absoluto (hm3) para Porcentagem (%) com precisão
+    gaugeThresholds = {
+      meta1: lastPoint.meta1,
+      meta2: lastPoint.meta2,
+      meta3: lastPoint.meta3,
+    };
+  }
+
   const recentHistory = history.slice(-8).reverse();
 
   return (
@@ -185,6 +200,7 @@ export default function EstadoDeSecaPage() {
         summary={summary}
         calculatedDays={daysInState}
         sinceDate={sinceDate}
+        thresholds={gaugeThresholds}
       />
 
       <div className="grid gap-4 md:gap-8 lg:grid-cols-1 xl:grid-cols-3">
@@ -192,6 +208,7 @@ export default function EstadoDeSecaPage() {
           <VolumeChart
             data={chart}
             reservatorioId={selectedReservoir?.id}
+            capacidadeMaxima={capacidadeTotal}
             onRefresh={fetchData}
           />
         </div>

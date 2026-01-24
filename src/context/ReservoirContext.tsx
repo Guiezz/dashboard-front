@@ -1,6 +1,6 @@
 "use client";
 
-import { config } from "@/config"; // Importa a config centralizada
+import { config } from "@/config";
 import {
   createContext,
   useState,
@@ -26,6 +26,7 @@ const ReservoirContext = createContext<ReservoirContextType | undefined>(
 
 export function ReservoirProvider({ children }: { children: ReactNode }) {
   const [reservatorios, setReservatorios] = useState<Reservatorio[]>([]);
+  // Inicia como null (nenhum selecionado)
   const [selectedReservoir, setSelectedReservoir] =
     useState<Reservatorio | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +38,6 @@ export function ReservoirProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         setError(null);
 
-        // CORREÇÃO: Usa config.apiBaseUrl (que já vem do config/index.ts)
         const res = await fetch(`${config.apiBaseUrl}/reservatorios`, {
           cache: "no-store",
         });
@@ -52,9 +52,8 @@ export function ReservoirProvider({ children }: { children: ReactNode }) {
         const data: Reservatorio[] = await res.json();
         setReservatorios(data);
 
-        if (data.length > 0) {
-          setSelectedReservoir(data[0]);
-        }
+        // REMOVIDO: O bloco que selecionava o primeiro item automaticamente
+        // Agora o estado inicial permanece null até o usuário escolher
       } catch (err: any) {
         console.error(err);
         setError(err.message);

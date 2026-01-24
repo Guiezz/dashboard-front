@@ -1,25 +1,37 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Gauge, Activity, CalendarDays, ShieldCheck } from "lucide-react";
+"use client";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Gauge, CalendarDays, ShieldCheck, Activity } from "lucide-react";
 import type { DashboardSummary } from "@/lib/types";
+import {
+  DroughtGauge,
+  GaugeThresholds,
+} from "@/components/dashboard/DroughtGauge";
 
 interface MetricCardsProps {
   summary: DashboardSummary;
-  // Novas props para corrigir o Tempo no Estado
   calculatedDays?: number;
   sinceDate?: string;
+  thresholds?: GaugeThresholds;
 }
 
 export function MetricCards({
   summary,
   calculatedDays,
   sinceDate,
+  thresholds,
 }: MetricCardsProps) {
-  // Se calculatedDays for passado, usa ele. Caso contrário, tenta usar o do summary.
-  // Se ambos forem indefinidos, mostra 0.
   const diasNoEstado = calculatedDays ?? summary.diasDesdeUltimaMudanca ?? 0;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+      {/* CARD 1: VOLUME */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
@@ -34,18 +46,33 @@ export function MetricCards({
           </p>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Estado da Seca</CardTitle>
-          <Activity className="h-4 w-4 text-muted-foreground" />
+
+      {/* CARD 2: GAUGE (RELÓGIO) */}
+      {/* CARD 2: GAUGE (RELÓGIO) */}
+      <Card className="flex flex-col justify-center overflow-hidden">
+        <CardHeader className="space-y-1 pb-2">
+          <div className="flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-medium">
+              Volume Atual (hm³)
+            </CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </div>
+
+          <CardDescription className="text-xs">
+            Indicador de Severidade da Seca
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{summary.estadoAtualSeca}</div>
-          <p className="text-xs text-muted-foreground">
-            Classificação atual do sistema
-          </p>
+
+        <CardContent className="p-0 pb-4 pt-4 flex items-center justify-center">
+          <DroughtGauge
+            currentState={summary.estadoAtualSeca}
+            percentage={summary.volumePercentual}
+            thresholds={thresholds}
+          />
         </CardContent>
       </Card>
+
+      {/* CARD 3: TEMPO NO ESTADO */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Tempo no Estado</CardTitle>
