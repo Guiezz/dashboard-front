@@ -24,6 +24,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
+import { EmptyReservoirState } from "@/components/dashboard/EmptyReservoirState";
 
 // Função auxiliar para converter strings de data (ex: "dd/mm/yyyy") em objetos Date
 function parseDate(dateStr: string): Date {
@@ -44,7 +46,7 @@ export default function EstadoDeSecaPage() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [chart, setChart] = useState<ChartDataPoint[]>([]);
 
-  // Novos estados para armazenar o cálculo de tempo no estado
+  // Estados para armazenar o cálculo de tempo no estado
   const [daysInState, setDaysInState] = useState<number>(0);
   const [sinceDate, setSinceDate] = useState<string>("");
 
@@ -96,22 +98,19 @@ export default function EstadoDeSecaPage() {
 
       // --- LÓGICA DE CÁLCULO DO TEMPO NO ESTADO ---
       if (historyData && historyData.length > 0) {
-        // Assume que o histórico vem ordenado (Antigo -> Novo)
         const sortedHistory = [...historyData];
-        const currentEntry = sortedHistory[sortedHistory.length - 1]; // Último registro
+        const currentEntry = sortedHistory[sortedHistory.length - 1];
         const currentState = currentEntry["Estado de Seca"];
 
         let startDate = currentEntry.Data;
 
-        // Percorre de trás para frente para achar a data onde o estado mudou
         for (let i = sortedHistory.length - 1; i >= 0; i--) {
           if (sortedHistory[i]["Estado de Seca"] !== currentState) {
-            break; // Encontrou mudança de estado
+            break;
           }
-          startDate = sortedHistory[i].Data; // Atualiza data de início
+          startDate = sortedHistory[i].Data;
         }
 
-        // Calcula a diferença de dias
         const start = parseDate(startDate);
         const today = new Date();
         start.setHours(0, 0, 0, 0);
@@ -123,7 +122,6 @@ export default function EstadoDeSecaPage() {
         setDaysInState(diffDays);
         setSinceDate(startDate);
       }
-      // ---------------------------------------------
     } catch (err) {
       console.error(err);
       setError(
@@ -136,32 +134,45 @@ export default function EstadoDeSecaPage() {
 
   useEffect(() => {
     if (!selectedReservoir) {
-      setIsLoadingPage(isReservoirLoading);
+      setIsLoadingPage(false);
       return;
     }
     fetchData();
-  }, [selectedReservoir, isReservoirLoading, fetchData]);
+  }, [selectedReservoir, fetchData]);
 
+  // 1. ESTADO: NADA SELECIONADO
+  if (!selectedReservoir) {
+    return (
+      <EmptyReservoirState
+        title="Monitoramento de Seca Indisponível"
+        description="Selecione um hidrossistema no topo da página para visualizar os indicadores de volume, as metas e o histórico de estados de seca."
+      />
+    );
+  }
+
+  // 2. ESTADO: CARREGANDO
   if (isLoadingPage) {
     return (
       <main className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">
-            Carregando dados do reservatório...
-          </h1>
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">
+            Carregando dados do monitoramento...
+          </p>
         </div>
       </main>
     );
   }
 
+  // 3. ESTADO: ERRO
   if (error || !summary) {
     return (
       <main className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-500">
+        <div className="text-center p-6 bg-card border rounded-xl shadow-sm">
+          <h1 className="text-2xl font-semibold text-destructive mb-2">
             Erro ao carregar os dados.
           </h1>
-          <p>
+          <p className="text-muted-foreground">
             {error || "Verifique se a API está em execução e tente novamente."}
           </p>
         </div>
@@ -170,13 +181,10 @@ export default function EstadoDeSecaPage() {
   }
 
   let gaugeThresholds: GaugeThresholds | undefined = undefined;
-  // Pega direto do reservatório, sem conta matemática arriscada
   const capacidadeTotal = selectedReservoir?.capacidade_hm3;
 
   if (chart.length > 0 && capacidadeTotal && capacidadeTotal > 0) {
     const lastPoint = chart[chart.length - 1];
-
-    // Converte Volume Absoluto (hm3) para Porcentagem (%) com precisão
     gaugeThresholds = {
       meta1: lastPoint.meta1,
       meta2: lastPoint.meta2,
@@ -186,16 +194,16 @@ export default function EstadoDeSecaPage() {
 
   const recentHistory = history.slice(-8).reverse();
 
+  // 4. ESTADO: SUCESSO
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">
-          Monitoramento do Estado de Seca do reservatório{" "}
-          {selectedReservoir?.nome}
+          Monitoramento do Estado de Seca:{" "}
+          <span className="text-primary">{selectedReservoir.nome}</span>
         </h1>
       </div>
 
-      {/* Passa os dados calculados para o card */}
       <MetricCards
         summary={summary}
         calculatedDays={daysInState}
@@ -207,12 +215,12 @@ export default function EstadoDeSecaPage() {
         <div className="xl:col-span-2">
           <VolumeChart
             data={chart}
-            reservatorioId={selectedReservoir?.id}
+            reservatorioId={selectedReservoir.id}
             capacidadeMaxima={capacidadeTotal}
             onRefresh={fetchData}
           />
         </div>
-        <Card>
+        <Card className="border shadow-sm">
           <CardHeader>
             <CardTitle>Histórico Recente</CardTitle>
             <CardDescription>

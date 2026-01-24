@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
-import { config } from "@/config"; // <--- Import config
+import { config } from "@/config";
 import { IdentificationData } from "@/lib/types";
 import {
   Card,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Info, MapPin, Loader2 } from "lucide-react";
 import IdentificationMapWrapper from "@/components/dashboard/IdentificationMapWrapper";
+import { EmptyReservoirState } from "@/components/dashboard/EmptyReservoirState";
 import Image from "next/image";
 
 export default function VisaoGeralPage() {
@@ -23,8 +24,9 @@ export default function VisaoGeralPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Se não houver reservatório selecionado, paramos o loading e não fazemos o fetch
     if (!selectedReservoir) {
-      setIsLoading(true);
+      setIsLoading(false);
       return;
     }
 
@@ -32,7 +34,6 @@ export default function VisaoGeralPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // CORREÇÃO: Usando config.apiBaseUrl
         const res = await fetch(
           `${config.apiBaseUrl}/reservatorios/${selectedReservoir.id}/identification`,
           { cache: "no-store" },
@@ -54,6 +55,12 @@ export default function VisaoGeralPage() {
     getIdentificationData();
   }, [selectedReservoir]);
 
+  // 1. ESTADO: NADA SELECIONADO (Usando o componente reutilizável)
+  if (!selectedReservoir) {
+    return <EmptyReservoirState />;
+  }
+
+  // 2. ESTADO: CARREGANDO (Após selecionar um item)
   if (isLoading) {
     return (
       <main className="flex flex-1 items-center justify-center">
@@ -67,6 +74,7 @@ export default function VisaoGeralPage() {
     );
   }
 
+  // 3. ESTADO: ERRO NA API
   if (error || !data) {
     return (
       <main className="flex flex-1 items-center justify-center">
@@ -82,6 +90,7 @@ export default function VisaoGeralPage() {
     );
   }
 
+  // 4. ESTADO: SUCESSO (Renderização dos dados)
   const paragraphs = data.descricao.split("\n").filter((p) => p.trim() !== "");
 
   return (

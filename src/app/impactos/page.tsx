@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
-import { config } from "@/config"; // <--- Import config
+import { config } from "@/config";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { IdentificationData } from "@/lib/types";
+import { EmptyReservoirState } from "@/components/dashboard/EmptyReservoirState";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -20,8 +21,9 @@ export default function ImpactosPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Se não houver reservatório, paramos o loading para exibir o EmptyState
     if (!selectedReservoir) {
-      setIsLoading(true);
+      setIsLoading(false);
       return;
     }
 
@@ -29,15 +31,14 @@ export default function ImpactosPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // CORREÇÃO: Usando config.apiBaseUrl. Rota: /reservatorios/{id}/identification
         const res = await fetch(
           `${config.apiBaseUrl}/reservatorios/${selectedReservoir.id}/identification`,
-          {
-            cache: "no-store",
-          },
+          { cache: "no-store" },
         );
         if (!res.ok) throw new Error("Falha ao buscar dados de identificação");
-        setIdentificationData(await res.json());
+
+        const data = await res.json();
+        setIdentificationData(data);
       } catch (err) {
         console.error(err);
         setError(
@@ -51,25 +52,39 @@ export default function ImpactosPage() {
     getIdentificationData();
   }, [selectedReservoir]);
 
+  // 1. ESTADO: NADA SELECIONADO
+  if (!selectedReservoir) {
+    return (
+      <EmptyReservoirState
+        title="Impactos da Seca Indisponíveis"
+        description="Por favor, selecione um hidrossistema no topo da página para visualizar o contexto local e acessar o formulário de percepção de impactos."
+      />
+    );
+  }
+
+  // 2. ESTADO: CARREGANDO
   if (isLoading) {
     return (
       <main className="flex flex-1 items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="text-muted-foreground">Carregando...</p>
+          <p className="text-muted-foreground">
+            Carregando dados de impacto...
+          </p>
         </div>
       </main>
     );
   }
 
+  // 3. ESTADO: ERRO
   if (error) {
     return (
       <main className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-500">
+        <div className="text-center p-6 bg-card border rounded-xl shadow-sm">
+          <h1 className="text-2xl font-semibold text-destructive mb-2">
             Erro ao carregar os dados.
           </h1>
-          <p>{error}</p>
+          <p className="text-muted-foreground">{error}</p>
         </div>
       </main>
     );
@@ -78,10 +93,11 @@ export default function ImpactosPage() {
   const nomeReservatorio = identificationData?.nome || "O Hidrossistema";
   const nomeMunicipio = identificationData?.municipio || "na região";
 
+  // 4. ESTADO: SUCESSO
   return (
-    <main className="flex flex-1 flex-col gap-8 p-4 lg:p-8">
+    <main className="flex flex-1 flex-col gap-8 p-4 lg:p-8 bg-background">
       <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl">
+        <h1 className="text-lg font-semibold md:text-2xl text-foreground">
           Impactos da Seca e Participação Social
         </h1>
       </div>
@@ -89,11 +105,11 @@ export default function ImpactosPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* Coluna da Esquerda: Textos e Botão */}
         <div className="flex flex-col gap-6">
-          <Card>
+          <Card className="border shadow-sm">
             <CardHeader>
               <CardTitle>Formulário de Percepção de Impactos</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-muted-foreground">
+            <CardContent className="space-y-4 text-muted-foreground leading-relaxed">
               <p>
                 Este formulário tem o objetivo de obter informações sobre a
                 percepção pessoal do impacto das secas no cotidiano individual,
@@ -113,11 +129,11 @@ export default function ImpactosPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-primary/5 border-primary/20">
+          <Card className="bg-primary/5 border-primary/20 shadow-sm">
             <CardHeader>
               <CardTitle>O Contexto Local</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-muted-foreground">
+            <CardContent className="space-y-4 text-muted-foreground leading-relaxed">
               <p>
                 O{" "}
                 <span className="font-bold text-foreground">
@@ -142,8 +158,10 @@ export default function ImpactosPage() {
         </div>
 
         {/* Coluna da Direita: Gráfico e Botão */}
-        <div className="flex flex-col items-center justify-center gap-8 p-4">
-          <h2 className="text-xl font-semibold">Principais Impactos</h2>
+        <div className="flex flex-col items-center justify-center gap-8 p-4 bg-card rounded-lg border shadow-sm">
+          <h2 className="text-xl font-semibold text-foreground">
+            Principais Impactos
+          </h2>
           <div className="relative w-full h-full max-w-md aspect-square">
             <Image
               src="/infografico/infografico.png"
@@ -151,9 +169,10 @@ export default function ImpactosPage() {
               fill
               style={{ objectFit: "contain" }}
               sizes="(max-width: 768px) 100vw, 50vw"
+              priority
             />
           </div>
-          <Button size="lg" asChild className="mt-8 w-full max-w-xs">
+          <Button size="lg" asChild className="mt-8 w-full max-w-xs shadow-md">
             <Link
               href="https://cepas.ufc.br/pt_br/avaliacao-de-impacto-das-secas/"
               target="_blank"

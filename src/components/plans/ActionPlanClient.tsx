@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { EmptyReservoirState } from "@/components/dashboard/EmptyReservoirState";
 
 export default function ActionPlanClient() {
   const { selectedReservoir } = useReservoir();
@@ -38,7 +39,11 @@ export default function ActionPlanClient() {
   const [isFiltersLoading, setIsFiltersLoading] = useState(true);
 
   useEffect(() => {
-    if (!selectedReservoir) return;
+    // Se não houver reservatório, paramos o estado de carregamento dos filtros
+    if (!selectedReservoir) {
+      setIsFiltersLoading(false);
+      return;
+    }
 
     const fetchFilters = async () => {
       setIsFiltersLoading(true);
@@ -103,9 +108,20 @@ export default function ActionPlanClient() {
     setAcao("");
   };
 
+  // 1. ESTADO: NADA SELECIONADO
+  if (!selectedReservoir) {
+    return (
+      <EmptyReservoirState
+        title="Planos de Ação Indisponíveis"
+        description="Por favor, selecione um hidrossistema no seletor acima para consultar os planos de ação e medidas preventivas."
+      />
+    );
+  }
+
+  // 2. ESTADO: CARREGANDO ESTRUTURA INICIAL (Filtros)
   if (isFiltersLoading) {
     return (
-      <div className="flex flex-1 items-center justify-center">
+      <div className="flex flex-1 items-center justify-center p-12">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           <p className="text-muted-foreground">Carregando filtros...</p>
@@ -114,6 +130,7 @@ export default function ActionPlanClient() {
     );
   }
 
+  // 3. ESTADO: SUCESSO
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -184,7 +201,7 @@ export default function ActionPlanClient() {
             </Select>
             <button
               onClick={handleResetFilters}
-              className="lg:col-start-5 bg-muted text-muted-foreground hover:bg-muted/80 rounded-md text-sm"
+              className="lg:col-start-5 bg-muted text-muted-foreground hover:bg-muted/80 rounded-md text-sm py-2 px-4 transition-colors"
             >
               Limpar Filtros
             </button>
@@ -210,7 +227,10 @@ export default function ActionPlanClient() {
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={3} className="text-center h-24">
-                      Carregando...
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Carregando resultados...
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : plans.length > 0 ? (
@@ -229,8 +249,11 @@ export default function ActionPlanClient() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center h-24">
-                      Nenhum resultado encontrado.
+                    <TableCell
+                      colSpan={3}
+                      className="text-center h-24 text-muted-foreground"
+                    >
+                      Nenhum resultado encontrado para os filtros selecionados.
                     </TableCell>
                   </TableRow>
                 )}

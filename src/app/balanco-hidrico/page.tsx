@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useReservoir } from "@/context/ReservoirContext";
-import { config } from "@/config"; // <--- Importar config
+import { config } from "@/config";
 import { StaticWaterBalanceCharts } from "@/lib/types";
 import { BalancoHidricoChart } from "@/components/balance/BalancoHidricoChart";
 import { ComposicaoDemandaChart } from "@/components/balance/ComposicaoDemandaChart";
 import { OfertaDemandaChart } from "@/components/balance/OfertaDemandaChart";
 import { Loader2 } from "lucide-react";
+import { EmptyReservoirState } from "@/components/dashboard/EmptyReservoirState";
 
 export default function BalancoHidricoPage() {
   const { selectedReservoir } = useReservoir();
@@ -18,8 +19,9 @@ export default function BalancoHidricoPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Se não houver reservatório, paramos o loading para mostrar o EmptyState
     if (!selectedReservoir) {
-      setIsLoading(true);
+      setIsLoading(false);
       return;
     }
 
@@ -27,7 +29,6 @@ export default function BalancoHidricoPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // CORREÇÃO: Rota correta "/water-balance" e usando config.apiBaseUrl
         const response = await fetch(
           `${config.apiBaseUrl}/reservatorios/${selectedReservoir.id}/water-balance`,
         );
@@ -45,6 +46,17 @@ export default function BalancoHidricoPage() {
     fetchData();
   }, [selectedReservoir]);
 
+  // 1. ESTADO: NADA SELECIONADO
+  if (!selectedReservoir) {
+    return (
+      <EmptyReservoirState
+        title="Balanço Hídrico Indisponível"
+        description="Por favor, selecione um hidrossistema no topo da página para visualizar os gráficos de oferta, demanda e balanço mensal."
+      />
+    );
+  }
+
+  // 2. ESTADO: CARREGANDO
   if (isLoading) {
     return (
       <main className="flex flex-1 items-center justify-center">
@@ -58,22 +70,34 @@ export default function BalancoHidricoPage() {
     );
   }
 
+  // 3. ESTADO: ERRO
   if (error || !chartData) {
     return (
-      <div className="flex flex-1 items-center justify-center text-red-500 p-4">
-        Erro ao carregar dados: {error || "Nenhum dado retornado."}
-      </div>
+      <main className="flex flex-1 items-center justify-center p-4">
+        <div className="text-center p-6 bg-card border rounded-xl shadow-sm max-w-md">
+          <h1 className="text-2xl font-semibold text-destructive mb-2">
+            Erro ao carregar dados
+          </h1>
+          <p className="text-muted-foreground">
+            {error || "Nenhum dado retornado pela API."}
+          </p>
+        </div>
+      </main>
     );
   }
 
+  // 4. ESTADO: SUCESSO
   return (
-    <main className="px-2 md:px-6 lg:px-8 py-8 space-y-8">
+    <main className="px-2 md:px-6 lg:px-8 py-8 space-y-8 bg-background flex-1">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">
-          Balanço Hídrico: {selectedReservoir?.nome}
+          Balanço Hídrico:{" "}
+          <span className="text-primary">{selectedReservoir.nome}</span>
         </h1>
       </div>
+
       <OfertaDemandaChart data={chartData.ofertaDemanda} />
+
       <div className="grid gap-8 md:grid-cols-2">
         <ComposicaoDemandaChart data={chartData.composicaoDemanda} />
         <BalancoHidricoChart data={chartData.balancoMensal} />
