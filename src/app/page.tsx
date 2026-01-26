@@ -20,6 +20,7 @@ import {
   ListChecks,
   ArrowRight,
   ShieldCheck,
+  Waves, // Novo ícone para o Simulador
 } from "lucide-react";
 
 export default function HomePage() {
@@ -94,6 +95,15 @@ export default function HomePage() {
             description="Visualize a relação entre oferta e demanda hídrica, simulações e cenários futuros."
             href="/balanco-hidrico"
           />
+
+          {/* --- NOVO CARD: SIMULADOR --- */}
+          <FeatureCard
+            icon={<Waves className="h-8 w-8 text-primary" />}
+            title="Simulador de Vazões"
+            description="Realize simulações de balanço hídrico baseadas em séries históricas de vazão e evaporação (1911-2017)."
+            href="/simulacao"
+          />
+
           <FeatureCard
             icon={<AlertTriangle className="h-8 w-8 text-primary" />}
             title="Impactos"

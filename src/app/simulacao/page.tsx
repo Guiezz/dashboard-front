@@ -10,11 +10,12 @@ import {
   LineChart,
   FileText,
   Waves,
-  CloudSun,
+  Sun,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { SimAcude, SimulacaoResponse } from "@/lib/types";
 import { parseDataLocal } from "@/components/simulacao/helpers";
+import { AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -25,26 +26,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Componentes
+// CONTEXTO E COMPONENTES GLOBAIS
+import { useReservoir } from "@/context/ReservoirContext";
+import { EmptyReservoirState } from "@/components/dashboard/EmptyReservoirState"; // Importação do aviso padrão
+
+// COMPONENTES LOCAIS
 import { ConfigForm } from "@/components/simulacao/ConfigForm";
 import { KPICards } from "@/components/simulacao/KPICards";
 import { MainChart } from "@/components/simulacao/MainChart";
 import { ResultsTable } from "@/components/simulacao/ResultsTable";
 import { HistoricalCharts } from "@/components/simulacao/HistoricalCharts";
 
-// Lista de IDs permitidos (Filtro)
-const RESERVATORIOS_ESTRATEGICOS = [
-  78, 240, 177, 170, 53, 97, 223, 119, 51, 69, 1119, 10, 11, 192, 92, 122, 162,
-];
-
 export default function SimulacaoPage() {
+  // --- CONTEXTO ---
+  const { selectedReservoir } = useReservoir();
+
   // --- ESTADOS ---
   const [acudes, setAcudes] = useState<SimAcude[]>([]);
   const [loadingAcudes, setLoadingAcudes] = useState(true);
   const [simulating, setSimulating] = useState(false);
 
   // Inputs
-  const [selectedAcude, setSelectedAcude] = useState<string>("");
+  const [selectedAcudeId, setSelectedAcudeId] = useState<string>("");
   const [capacidadeTotal, setCapacidadeTotal] = useState<number>(0);
   const [volPercentual, setVolPercentual] = useState<string>("50");
 
@@ -59,22 +62,15 @@ export default function SimulacaoPage() {
   const [resultado, setResultado] = useState<SimulacaoResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // --- CARREGAMENTO ---
+  // --- CARREGAMENTO INICIAL ---
   useEffect(() => {
     async function load() {
       try {
         const data = await api.getSimulacaoAcudes();
-
-        // FILTRAGEM: Mantém apenas os reservatórios da lista estratégica
-        const filtrados = data.filter((a) =>
-          RESERVATORIOS_ESTRATEGICOS.includes(a.codigo),
-        );
-
-        // Ordena alfabeticamente
-        setAcudes(filtrados.sort((a, b) => a.nome.localeCompare(b.nome)));
+        setAcudes(data);
       } catch (err) {
         console.error("Erro", err);
-        setError("Não foi possível carregar a lista de reservatórios.");
+        setError("Não foi possível carregar os dados de simulação.");
       } finally {
         setLoadingAcudes(false);
       }
@@ -82,17 +78,29 @@ export default function SimulacaoPage() {
     load();
   }, []);
 
-  // --- AÇÕES ---
-  const handleSelectAcude = (val: string) => {
-    setSelectedAcude(val);
-    const acude = acudes.find((a) => a.codigo.toString() === val);
-    if (acude) {
-      setCapacidadeTotal(acude.capacidade_m3 / 1000000);
+  // --- SINCRONIZAÇÃO COM O CONTEXTO ---
+  useEffect(() => {
+    // Reseta resultado se mudar de açude
+    setResultado(null);
+
+    if (selectedReservoir && acudes.length > 0) {
+      const match = acudes.find((a) => a.codigo === selectedReservoir.id);
+
+      if (match) {
+        setSelectedAcudeId(match.codigo.toString());
+        setCapacidadeTotal(match.capacidade_m3 / 1000000);
+        setError(null);
+      } else {
+        setSelectedAcudeId("");
+        setCapacidadeTotal(0);
+      }
+    } else {
+      setSelectedAcudeId("");
     }
-  };
+  }, [selectedReservoir, acudes]);
 
   const handleSimular = async () => {
-    if (!selectedAcude) return;
+    if (!selectedAcudeId) return;
 
     // Validações
     const perc = parseFloat(volPercentual);
@@ -113,7 +121,7 @@ export default function SimulacaoPage() {
 
     try {
       const resp = await api.runSimulacao({
-        reservatorio_id: parseInt(selectedAcude),
+        reservatorio_id: parseInt(selectedAcudeId),
         volume_inicial: volAbsoluto,
         data_inicio: new Date(dataInicio).toISOString(),
         data_fim: new Date(dataFim).toISOString(),
@@ -128,7 +136,7 @@ export default function SimulacaoPage() {
     }
   };
 
-  // --- FUNÇÃO GENÉRICA DE DOWNLOAD ---
+  // --- FUNÇÕES DE DOWNLOAD ---
   const downloadCSV = (
     filename: string,
     headers: string[],
@@ -138,7 +146,6 @@ export default function SimulacaoPage() {
       headers.join(","),
       ...rows.map((e) => e.join(",")),
     ].join("\n");
-
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -149,7 +156,6 @@ export default function SimulacaoPage() {
     document.body.removeChild(link);
   };
 
-  // 1. Download Completo
   const handleDownloadCompleto = () => {
     if (!resultado) return;
     const headers = [
@@ -168,10 +174,9 @@ export default function SimulacaoPage() {
       r.vertimento_hm3.toFixed(3),
       r.volume_hm3.toFixed(3),
     ]);
-    downloadCSV(`simulacao_completa_${selectedAcude}.csv`, headers, rows);
+    downloadCSV(`simulacao_completa_${selectedAcudeId}.csv`, headers, rows);
   };
 
-  // 2. Download Vazões (Afluência)
   const handleDownloadVazoes = () => {
     if (!resultado) return;
     const headers = ["Data", "Vazao (hm3)"];
@@ -179,10 +184,9 @@ export default function SimulacaoPage() {
       r.data,
       r.afluencia_hm3.toFixed(3),
     ]);
-    downloadCSV(`serie_vazoes_${selectedAcude}.csv`, headers, rows);
+    downloadCSV(`serie_vazoes_${selectedAcudeId}.csv`, headers, rows);
   };
 
-  // 3. Download Evaporação
   const handleDownloadEvaporacao = () => {
     if (!resultado) return;
     const headers = ["Data", "Evaporacao (hm3)"];
@@ -190,7 +194,7 @@ export default function SimulacaoPage() {
       r.data,
       r.evaporacao_hm3.toFixed(3),
     ]);
-    downloadCSV(`serie_evaporacao_${selectedAcude}.csv`, headers, rows);
+    downloadCSV(`serie_evaporacao_${selectedAcudeId}.csv`, headers, rows);
   };
 
   // --- CÁLCULO DE FALHAS ---
@@ -204,22 +208,30 @@ export default function SimulacaoPage() {
       return demandaEsperadaHm3 - item.retirada_hm3 > 0.01;
     });
   };
-
   const mesesFalha = getMesesComFalha();
 
+  // --- RENDERIZAÇÃO: ESTADO VAZIO PADRÃO ---
+  if (!selectedReservoir) {
+    return (
+      <div className="container mx-auto p-6 animate-in fade-in duration-500">
+        <EmptyReservoirState />
+      </div>
+    );
+  }
+
+  // --- RENDERIZAÇÃO: PÁGINA PRINCIPAL ---
   return (
     <div className="container mx-auto p-6 space-y-8 animate-in fade-in duration-500">
-      {/* Header Atualizado */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Droplets className="h-8 w-8 text-blue-600" />
+            <Droplets className="h-8 w-8 text-amber-700" />
             Simulador de Balanço Hídrico
           </h1>
           <p className="text-muted-foreground max-w-2xl">
-            Avalie a segurança hídrica submetendo o reservatório aos cenários
-            reais de afluência e evaporação ocorridos entre{" "}
-            <strong>1911 e 2017</strong>.
+            Cenário atual: <strong>{selectedReservoir.nome}</strong>. Avalie a
+            segurança hídrica considerando a série histórica (1911-2017).
           </p>
         </div>
 
@@ -252,7 +264,7 @@ export default function SimulacaoPage() {
                 onClick={handleDownloadEvaporacao}
                 className="cursor-pointer"
               >
-                <CloudSun className="mr-2 h-4 w-4 text-orange-600" /> Apenas
+                <Sun className="mr-2 h-4 w-4 text-orange-600" /> Apenas
                 Evaporação (CSV)
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -264,10 +276,8 @@ export default function SimulacaoPage() {
         {/* === COLUNA ESQUERDA: CONFIGURAÇÃO === */}
         <div className="lg:col-span-3 space-y-6">
           <ConfigForm
-            acudes={acudes}
-            loadingAcudes={loadingAcudes}
-            onSelectAcude={handleSelectAcude}
-            selectedAcude={selectedAcude}
+            selectedReservoirName={selectedReservoir.nome}
+            selectedAcudeId={selectedAcudeId}
             capacidadeTotal={capacidadeTotal}
             volPercentual={volPercentual}
             setVolPercentual={setVolPercentual}
@@ -285,15 +295,35 @@ export default function SimulacaoPage() {
           />
         </div>
 
-        {/* === COLUNA DIREITA: ABAS E RESULTADOS === */}
+        {/* === COLUNA DIREITA: RESULTADOS === */}
         <div className="lg:col-span-9 space-y-6">
-          {!resultado && !simulating && (
-            <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-muted-foreground bg-slate-50 rounded-lg border-2 border-dashed">
-              <Droplets className="h-12 w-12 mb-4 opacity-20" />
-              <p>Configure os dados à esquerda e clique em "Gerar Simulação"</p>
+          {/* Aviso se selecionou mas não tem dados (ex: açude novo sem histórico) */}
+          {selectedReservoir && !selectedAcudeId && !loadingAcudes && (
+            <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-muted-foreground bg-yellow-50 rounded-lg border-2 border-dashed border-yellow-200 p-8 text-center">
+              <AlertCircle className="h-12 w-12 mb-4 text-yellow-500" />
+              <h3 className="text-lg font-semibold text-yellow-700">
+                Dados Indisponíveis
+              </h3>
+              <p className="max-w-md mt-2">
+                O reservatório <strong>{selectedReservoir.nome}</strong> não
+                possui série histórica cadastrada para simulação. Por favor,
+                selecione outro reservatório no menu.
+              </p>
             </div>
           )}
 
+          {/* Estado Inicial (Pronto para simular) */}
+          {!resultado && !simulating && selectedAcudeId && (
+            <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-muted-foreground bg-slate-50 rounded-lg border-2 border-dashed">
+              <Droplets className="h-12 w-12 mb-4 opacity-20" />
+              <p>
+                Configure os parâmetros à esquerda e clique em{" "}
+                <strong>Gerar Simulação</strong>
+              </p>
+            </div>
+          )}
+
+          {/* Resultados com Abas */}
           {resultado && (
             <Tabs defaultValue="simulacao" className="w-full">
               <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
@@ -313,7 +343,6 @@ export default function SimulacaoPage() {
                 </TabsTrigger>
               </TabsList>
 
-              {/* ABA 1: SIMULAÇÃO */}
               <TabsContent
                 value="simulacao"
                 className="space-y-6 mt-4 animate-in fade-in slide-in-from-top-2 duration-300"
@@ -327,7 +356,6 @@ export default function SimulacaoPage() {
                 <ResultsTable data={resultado.resultados} />
               </TabsContent>
 
-              {/* ABA 2: DADOS HISTÓRICOS */}
               <TabsContent
                 value="historico"
                 className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300"
