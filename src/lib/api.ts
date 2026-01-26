@@ -9,6 +9,9 @@ import {
   StaticWaterBalanceCharts,
   UsoAgua,
   Responsavel,
+  SimAcude,
+  SimulacaoRequest,
+  SimulacaoResponse,
 } from "./types";
 import { config } from "@/config";
 
@@ -110,4 +113,16 @@ export const api = {
 
   getResponsaveis: (id: number) =>
     fetchAPI<Responsavel[]>(`/reservatorios/${id}/responsibles`),
+
+  // --- SIMULAÇÃO (Novo) ---
+
+  // Lista os açudes disponíveis para simular (vem da tabela sim_acudes)
+  getSimulacaoAcudes: () => fetchAPI<SimAcude[]>("/simulacao/acudes"),
+
+  // Executa a simulação enviando os parâmetros
+  runSimulacao: (params: SimulacaoRequest) =>
+    fetchAPI<SimulacaoResponse>("/simulacao/run", {
+      method: "POST",
+      body: JSON.stringify(params),
+    }),
 };
