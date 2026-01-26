@@ -1,0 +1,343 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { getDaysInMonth } from "date-fns";
+import { Button } from "@/components/ui/button";
+import {
+  Download,
+  Droplets,
+  BarChart3,
+  LineChart,
+  FileText,
+  Waves,
+  CloudSun,
+} from "lucide-react";
+import { api } from "@/lib/api";
+import { SimAcude, SimulacaoResponse } from "@/lib/types";
+import { parseDataLocal } from "@/components/simulacao/helpers";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+// Componentes
+import { ConfigForm } from "@/components/simulacao/ConfigForm";
+import { KPICards } from "@/components/simulacao/KPICards";
+import { MainChart } from "@/components/simulacao/MainChart";
+import { ResultsTable } from "@/components/simulacao/ResultsTable";
+import { HistoricalCharts } from "@/components/simulacao/HistoricalCharts";
+
+// Lista de IDs permitidos (Filtro)
+const RESERVATORIOS_ESTRATEGICOS = [
+  78, 240, 177, 170, 53, 97, 223, 119, 51, 69, 1119, 10, 11, 192, 92, 122, 162,
+];
+
+export default function SimulacaoPage() {
+  // --- ESTADOS ---
+  const [acudes, setAcudes] = useState<SimAcude[]>([]);
+  const [loadingAcudes, setLoadingAcudes] = useState(true);
+  const [simulating, setSimulating] = useState(false);
+
+  // Inputs
+  const [selectedAcude, setSelectedAcude] = useState<string>("");
+  const [capacidadeTotal, setCapacidadeTotal] = useState<number>(0);
+  const [volPercentual, setVolPercentual] = useState<string>("50");
+
+  // Datas
+  const MIN_DATE = "1911-01-01";
+  const MAX_DATE = "2017-12-31";
+  const [dataInicio, setDataInicio] = useState("1911-01-01");
+  const [dataFim, setDataFim] = useState("1915-12-01");
+  const [demanda, setDemanda] = useState<string>("0.5");
+
+  // Resultados
+  const [resultado, setResultado] = useState<SimulacaoResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // --- CARREGAMENTO ---
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await api.getSimulacaoAcudes();
+
+        // FILTRAGEM: Mantém apenas os reservatórios da lista estratégica
+        const filtrados = data.filter((a) =>
+          RESERVATORIOS_ESTRATEGICOS.includes(a.codigo),
+        );
+
+        // Ordena alfabeticamente
+        setAcudes(filtrados.sort((a, b) => a.nome.localeCompare(b.nome)));
+      } catch (err) {
+        console.error("Erro", err);
+        setError("Não foi possível carregar a lista de reservatórios.");
+      } finally {
+        setLoadingAcudes(false);
+      }
+    }
+    load();
+  }, []);
+
+  // --- AÇÕES ---
+  const handleSelectAcude = (val: string) => {
+    setSelectedAcude(val);
+    const acude = acudes.find((a) => a.codigo.toString() === val);
+    if (acude) {
+      setCapacidadeTotal(acude.capacidade_m3 / 1000000);
+    }
+  };
+
+  const handleSimular = async () => {
+    if (!selectedAcude) return;
+
+    // Validações
+    const perc = parseFloat(volPercentual);
+    if (isNaN(perc) || perc < 0 || perc > 100) {
+      setError("O volume deve ser entre 0% e 100%.");
+      return;
+    }
+    if (dataInicio < MIN_DATE || dataFim > MAX_DATE) {
+      setError("As datas devem estar entre 1911 e 2017.");
+      return;
+    }
+
+    setSimulating(true);
+    setError(null);
+    setResultado(null);
+
+    const volAbsoluto = (perc / 100) * capacidadeTotal;
+
+    try {
+      const resp = await api.runSimulacao({
+        reservatorio_id: parseInt(selectedAcude),
+        volume_inicial: volAbsoluto,
+        data_inicio: new Date(dataInicio).toISOString(),
+        data_fim: new Date(dataFim).toISOString(),
+        usar_media_historica: false,
+        demandas_mensais: [parseFloat(demanda)],
+      });
+      setResultado(resp);
+    } catch (err: any) {
+      setError(err.message || "Erro ao executar a simulação.");
+    } finally {
+      setSimulating(false);
+    }
+  };
+
+  // --- FUNÇÃO GENÉRICA DE DOWNLOAD ---
+  const downloadCSV = (
+    filename: string,
+    headers: string[],
+    rows: (string | number)[][],
+  ) => {
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((e) => e.join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // 1. Download Completo
+  const handleDownloadCompleto = () => {
+    if (!resultado) return;
+    const headers = [
+      "Data",
+      "Afluencia (hm3)",
+      "Evaporacao (hm3)",
+      "Retirada (hm3)",
+      "Vertimento (hm3)",
+      "Volume Inicial (hm3)",
+    ];
+    const rows = resultado.resultados.map((r) => [
+      r.data,
+      r.afluencia_hm3.toFixed(3),
+      r.evaporacao_hm3.toFixed(3),
+      r.retirada_hm3.toFixed(3),
+      r.vertimento_hm3.toFixed(3),
+      r.volume_hm3.toFixed(3),
+    ]);
+    downloadCSV(`simulacao_completa_${selectedAcude}.csv`, headers, rows);
+  };
+
+  // 2. Download Vazões (Afluência)
+  const handleDownloadVazoes = () => {
+    if (!resultado) return;
+    const headers = ["Data", "Vazao (hm3)"];
+    const rows = resultado.resultados.map((r) => [
+      r.data,
+      r.afluencia_hm3.toFixed(3),
+    ]);
+    downloadCSV(`serie_vazoes_${selectedAcude}.csv`, headers, rows);
+  };
+
+  // 3. Download Evaporação
+  const handleDownloadEvaporacao = () => {
+    if (!resultado) return;
+    const headers = ["Data", "Evaporacao (hm3)"];
+    const rows = resultado.resultados.map((r) => [
+      r.data,
+      r.evaporacao_hm3.toFixed(3),
+    ]);
+    downloadCSV(`serie_evaporacao_${selectedAcude}.csv`, headers, rows);
+  };
+
+  // --- CÁLCULO DE FALHAS ---
+  const getMesesComFalha = () => {
+    if (!resultado) return [];
+    const demandaM3s = parseFloat(demanda);
+    return resultado.resultados.filter((item) => {
+      const data = parseDataLocal(item.data);
+      const diasNoMes = getDaysInMonth(data);
+      const demandaEsperadaHm3 = (demandaM3s * diasNoMes * 86400) / 1e6;
+      return demandaEsperadaHm3 - item.retirada_hm3 > 0.01;
+    });
+  };
+
+  const mesesFalha = getMesesComFalha();
+
+  return (
+    <div className="container mx-auto p-6 space-y-8 animate-in fade-in duration-500">
+      {/* Header Atualizado */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Droplets className="h-8 w-8 text-blue-600" />
+            Simulador de Balanço Hídrico
+          </h1>
+          <p className="text-muted-foreground max-w-2xl">
+            Avalie a segurança hídrica submetendo o reservatório aos cenários
+            reais de afluência e evaporação ocorridos entre{" "}
+            <strong>1911 e 2017</strong>.
+          </p>
+        </div>
+
+        {resultado && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex gap-2">
+                <Download className="h-4 w-4" />
+                Exportar Dados
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Selecione o formato</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleDownloadCompleto}
+                className="cursor-pointer"
+              >
+                <FileText className="mr-2 h-4 w-4 text-blue-600" /> Resultado
+                Completo (CSV)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDownloadVazoes}
+                className="cursor-pointer"
+              >
+                <Waves className="mr-2 h-4 w-4 text-green-600" /> Apenas Vazões
+                (CSV)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDownloadEvaporacao}
+                className="cursor-pointer"
+              >
+                <CloudSun className="mr-2 h-4 w-4 text-orange-600" /> Apenas
+                Evaporação (CSV)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* === COLUNA ESQUERDA: CONFIGURAÇÃO === */}
+        <div className="lg:col-span-3 space-y-6">
+          <ConfigForm
+            acudes={acudes}
+            loadingAcudes={loadingAcudes}
+            onSelectAcude={handleSelectAcude}
+            selectedAcude={selectedAcude}
+            capacidadeTotal={capacidadeTotal}
+            volPercentual={volPercentual}
+            setVolPercentual={setVolPercentual}
+            dataInicio={dataInicio}
+            setDataInicio={setDataInicio}
+            dataFim={dataFim}
+            setDataFim={setDataFim}
+            demanda={demanda}
+            setDemanda={setDemanda}
+            onSimular={handleSimular}
+            simulating={simulating}
+            error={error}
+            minDate={MIN_DATE}
+            maxDate={MAX_DATE}
+          />
+        </div>
+
+        {/* === COLUNA DIREITA: ABAS E RESULTADOS === */}
+        <div className="lg:col-span-9 space-y-6">
+          {!resultado && !simulating && (
+            <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-muted-foreground bg-slate-50 rounded-lg border-2 border-dashed">
+              <Droplets className="h-12 w-12 mb-4 opacity-20" />
+              <p>Configure os dados à esquerda e clique em "Gerar Simulação"</p>
+            </div>
+          )}
+
+          {resultado && (
+            <Tabs defaultValue="simulacao" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+                <TabsTrigger
+                  value="simulacao"
+                  className="flex items-center gap-2"
+                >
+                  <LineChart className="h-4 w-4" />
+                  Simulação
+                </TabsTrigger>
+                <TabsTrigger
+                  value="historico"
+                  className="flex items-center gap-2"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  Dados Históricos
+                </TabsTrigger>
+              </TabsList>
+
+              {/* ABA 1: SIMULAÇÃO */}
+              <TabsContent
+                value="simulacao"
+                className="space-y-6 mt-4 animate-in fade-in slide-in-from-top-2 duration-300"
+              >
+                <KPICards
+                  frequenciaFalha={resultado.frequencia_nao_atendida}
+                  mesesFalha={mesesFalha}
+                  demandaConfigurada={parseFloat(demanda)}
+                />
+                <MainChart data={resultado.resultados} />
+                <ResultsTable data={resultado.resultados} />
+              </TabsContent>
+
+              {/* ABA 2: DADOS HISTÓRICOS */}
+              <TabsContent
+                value="historico"
+                className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300"
+              >
+                <HistoricalCharts data={resultado.resultados} />
+              </TabsContent>
+            </Tabs>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

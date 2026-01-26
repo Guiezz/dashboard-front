@@ -122,3 +122,37 @@ export interface Responsavel {
   setor: string; // Garantir que o campo existe para exibição
   cargo: string; // Agora receberá o cargo corretamente
 }
+
+// --- SIMULAÇÃO ---
+//
+export interface SimAcude {
+  codigo: number;
+  nome: string;
+  municipio: string;
+  capacidade_m3: number;
+}
+
+export interface SimulacaoRequest {
+  reservatorio_id: number;
+  volume_inicial: number;
+  data_inicio: string; // ISO Date string (YYYY-MM-DD)
+  data_fim: string; // ISO Date string
+  usar_media_historica: boolean;
+  demandas_mensais: number[]; // Array com 1 ou 12 valores
+}
+
+export interface SimulacaoResultadoPonto {
+  data: string;
+  volume_hm3: number;
+  afluencia_hm3: number;
+  retirada_hm3: number;
+  evaporacao_hm3: number;
+  vertimento_hm3: number;
+  alerta?: string;
+}
+
+export interface SimulacaoResponse {
+  resultados: SimulacaoResultadoPonto[];
+  frequencia_nao_atendida: number;
+  volume_final: number;
+}
