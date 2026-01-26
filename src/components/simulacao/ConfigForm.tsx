@@ -8,23 +8,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Calendar, AlertCircle } from "lucide-react";
-import { SimAcude } from "@/lib/types";
+import { Loader2, Calendar, AlertCircle, Database } from "lucide-react";
 
 interface ConfigFormProps {
-  acudes: SimAcude[];
-  loadingAcudes: boolean;
-  onSelectAcude: (val: string) => void;
-  selectedAcude: string;
+  selectedReservoirName?: string; // Novo: Nome vindo do contexto
+  selectedAcudeId: string; // Novo: ID validado
   capacidadeTotal: number;
   volPercentual: string;
   setVolPercentual: (val: string) => void;
@@ -42,10 +32,8 @@ interface ConfigFormProps {
 }
 
 export function ConfigForm({
-  acudes,
-  loadingAcudes,
-  onSelectAcude,
-  selectedAcude,
+  selectedReservoirName,
+  selectedAcudeId,
   capacidadeTotal,
   volPercentual,
   setVolPercentual,
@@ -62,35 +50,28 @@ export function ConfigForm({
   maxDate,
 }: ConfigFormProps) {
   return (
-    <Card className="border-l-4 border-l-blue-600 shadow-sm h-fit">
+    <Card className="border-l-4 border-l-amber-500 shadow-sm h-fit">
       <CardHeader>
         <CardTitle className="text-lg">Configuração</CardTitle>
-        <CardDescription>Defina o cenário</CardDescription>
+        <CardDescription>
+          Cenário para {selectedReservoirName || "..."}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
+        {/* EXIBIÇÃO DO RESERVATÓRIO (Sem opção de troca) */}
         <div className="space-y-2">
-          <Label>Reservatório</Label>
-          <Select
-            onValueChange={onSelectAcude}
-            disabled={loadingAcudes}
-            value={selectedAcude}
+          <Label className="flex items-center gap-2">
+            <Database className="h-4 w-4 text-muted-foreground" />
+            Reservatório Selecionado
+          </Label>
+          <div
+            className={`p-3 rounded-md border text-sm font-medium ${selectedReservoirName ? "bg-blue-50 text-amber-900 border-blue-100" : "bg-slate-100 text-slate-500"}`}
           >
-            <SelectTrigger>
-              <SelectValue
-                placeholder={loadingAcudes ? "Carregando..." : "Selecione..."}
-              />
-            </SelectTrigger>
-            <SelectContent className="max-h-[300px]">
-              {acudes.map((a) => (
-                <SelectItem key={a.codigo} value={a.codigo.toString()}>
-                  {a.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {selectedReservoirName || "Selecione no Menu Lateral"}
+          </div>
           {capacidadeTotal > 0 && (
             <p className="text-xs text-muted-foreground">
-              Capacidade: <strong>{capacidadeTotal.toFixed(2)} hm³</strong>
+              Capacidade Máx: <strong>{capacidadeTotal.toFixed(2)} hm³</strong>
             </p>
           )}
         </div>
@@ -105,13 +86,14 @@ export function ConfigForm({
               value={volPercentual}
               onChange={(e) => setVolPercentual(e.target.value)}
               className="pr-8"
+              disabled={!selectedAcudeId}
             />
             <span className="absolute right-3 top-2 text-sm text-muted-foreground">
               %
             </span>
           </div>
           {capacidadeTotal > 0 && volPercentual && (
-            <p className="text-xs text-blue-600">
+            <p className="text-xs text-amber-600-500">
               ={" "}
               {((parseFloat(volPercentual) / 100) * capacidadeTotal).toFixed(2)}{" "}
               hm³
@@ -132,6 +114,7 @@ export function ConfigForm({
                 max={maxDate}
                 value={dataInicio}
                 onChange={(e) => setDataInicio(e.target.value)}
+                disabled={!selectedAcudeId}
               />
             </div>
             <div className="space-y-1">
@@ -142,6 +125,7 @@ export function ConfigForm({
                 max={maxDate}
                 value={dataFim}
                 onChange={(e) => setDataFim(e.target.value)}
+                disabled={!selectedAcudeId}
               />
             </div>
           </div>
@@ -154,13 +138,14 @@ export function ConfigForm({
             step="0.1"
             value={demanda}
             onChange={(e) => setDemanda(e.target.value)}
+            disabled={!selectedAcudeId}
           />
         </div>
 
         <Button
-          className="w-full bg-blue-600 hover:bg-blue-700"
+          className="w-full bg-amber-500 hover:bg-amber-800 text-amber-50"
           onClick={onSimular}
-          disabled={simulating || !selectedAcude}
+          disabled={simulating || !selectedAcudeId}
         >
           {simulating ? (
             <>
