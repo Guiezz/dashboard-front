@@ -15,6 +15,7 @@ import {
   Activity,
   Hammer,
   Smile,
+  Cog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -103,6 +104,15 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
               <Scale className="h-5 w-5" />
               Balanço Hídrico
             </Link>
+
+            <Link
+              href="/simulacao"
+              className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+            >
+              <Cog className="h-5 w-5" />
+              Simulador
+            </Link>
+
             <Link
               href="/responsaveis"
               className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
