@@ -123,6 +123,7 @@ export default function SimulacaoPage() {
       const resp = await api.runSimulacao({
         reservatorio_id: parseInt(selectedAcudeId),
         volume_inicial: volAbsoluto,
+        volume_final: volAbsoluto,
         data_inicio: new Date(dataInicio).toISOString(),
         data_fim: new Date(dataFim).toISOString(),
         usar_media_historica: false,

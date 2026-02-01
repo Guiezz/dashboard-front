@@ -69,6 +69,9 @@ export function ResultsTable({ data }: ResultsTableProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Data</TableHead>
+                <TableHead className="text-right text-blue-400">
+                  Vol. Inicial
+                </TableHead>
                 <TableHead className="text-right text-green-600">
                   Afluência
                 </TableHead>
@@ -77,8 +80,8 @@ export function ResultsTable({ data }: ResultsTableProps) {
                   Retirada
                 </TableHead>
                 <TableHead className="text-right">Vertimento</TableHead>
-                <TableHead className="text-right text-blue-600 font-bold">
-                  Vol. Inicial
+                <TableHead className="text-right text-blue-700 font-bold">
+                  Vol. Final
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -87,6 +90,10 @@ export function ResultsTable({ data }: ResultsTableProps) {
                 <TableRow key={index}>
                   <TableCell className="font-medium">
                     {formatDate(item.data)}
+                  </TableCell>
+                  {/* Volume Inicial */}
+                  <TableCell className="text-right text-blue-400">
+                    {item.volume_inicial_hm3.toFixed(2)}
                   </TableCell>
                   <TableCell className="text-right">
                     {item.afluencia_hm3.toFixed(2)}
@@ -102,8 +109,9 @@ export function ResultsTable({ data }: ResultsTableProps) {
                       ? item.vertimento_hm3.toFixed(2)
                       : "-"}
                   </TableCell>
-                  <TableCell className="text-right font-bold text-blue-600">
-                    {item.volume_hm3.toFixed(2)}
+                  {/* Volume Final (Destaque) */}
+                  <TableCell className="text-right font-bold text-blue-700">
+                    {item.volume_final_hm3.toFixed(2)}
                   </TableCell>
                 </TableRow>
               ))}
