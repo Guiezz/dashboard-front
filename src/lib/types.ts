@@ -135,6 +135,7 @@ export interface SimAcude {
 export interface SimulacaoRequest {
   reservatorio_id: number;
   volume_inicial: number;
+  volume_final: number;
   data_inicio: string; // ISO Date string (YYYY-MM-DD)
   data_fim: string; // ISO Date string
   usar_media_historica: boolean;
@@ -143,7 +144,8 @@ export interface SimulacaoRequest {
 
 export interface SimulacaoResultadoPonto {
   data: string;
-  volume_hm3: number;
+  volume_inicial_hm3: number; // Nome atualizado (era volume_hm3)
+  volume_final_hm3: number; // Novo campo
   afluencia_hm3: number;
   retirada_hm3: number;
   evaporacao_hm3: number;
