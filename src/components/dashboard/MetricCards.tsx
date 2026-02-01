@@ -93,7 +93,7 @@ export function MetricCards({
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {summary.medidasRecomendadas.length}
+            {summary.medidasRecomendadas?.length ?? 0}
           </div>
           <p className="text-xs text-muted-foreground">
             Recomendações em vigor

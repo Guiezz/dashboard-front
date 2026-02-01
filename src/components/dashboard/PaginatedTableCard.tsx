@@ -37,10 +37,13 @@ export function PaginatedTableCard<T>({
 }: PaginatedTableCardProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(data.length / itemsPerPage);
+  // CORREÇÃO: Garante que 'data' seja um array vazio se vier nulo ou undefined
+  const safeData = data ?? [];
+
+  const totalPages = Math.ceil(safeData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentData = data.slice(startIndex, endIndex);
+  const currentData = safeData.slice(startIndex, endIndex);
 
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -62,7 +65,12 @@ export function PaginatedTableCard<T>({
             <TableHeader>
               <TableRow>
                 {headers.map((header, index) => (
-                  <TableHead key={index} className={`w-[${100 / headers.length}%]`}>{header}</TableHead>
+                  <TableHead
+                    key={index}
+                    className={`w-[${100 / headers.length}%]`}
+                  >
+                    {header}
+                  </TableHead>
                 ))}
               </TableRow>
             </TableHeader>
