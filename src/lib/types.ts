@@ -150,6 +150,7 @@ export interface SimulacaoResultadoPonto {
   retirada_hm3: number;
   evaporacao_hm3: number;
   vertimento_hm3: number;
+  volume_hm3: number;
   alerta?: string;
 }
 
