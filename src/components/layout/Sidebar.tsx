@@ -94,7 +94,6 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right">
-                {" "}
                 Implementação dos Planos de Secas{" "}
               </TooltipContent>
             </Tooltip>
@@ -159,7 +158,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               <TooltipTrigger asChild>
                 <Link
                   href="/simulacao"
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${isActive("/responsaveis") ? "bg-muted text-primary" : "text-muted-foreground"} ${
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${isActive("/simulacao") ? "bg-muted text-primary" : "text-muted-foreground"} ${
                     isCollapsed ? "justify-center" : "gap-3"
                   }`}
                 >
