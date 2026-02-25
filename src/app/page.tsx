@@ -20,8 +20,9 @@ import {
   ListChecks,
   ArrowRight,
   ShieldCheck,
-  Waves, // Novo ícone para o Simulador
+  Waves,
 } from "lucide-react";
+import { ReservoirSelector } from "@/components/layout/ReservoirSelector";
 
 export default function HomePage() {
   const { reservatorios, setSelectedReservoir } = useReservoir();
@@ -29,7 +30,7 @@ export default function HomePage() {
   return (
     <main className="flex flex-col gap-12 p-4 lg:p-8 bg-background animate-fade-in">
       {/* Hero Section */}
-      <section className="flex flex-col md:flex-row items-center gap-8 py-8 md:py-16">
+      <section className="flex flex-col md:flex-row items-center gap-8 py-4 md:py-5">
         <div className="flex-1 space-y-6">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary">
             Sistema de Apoio à Decisão de Gestão de Secas em Hidrossistemas
@@ -39,27 +40,56 @@ export default function HomePage() {
             acompanhamento e divulgação das ações concebidas nos Planos de
             Gestão Proativa de Seca dos hidrossistemas do Ceará.
           </p>
-          <div className="flex flex-wrap gap-4">
-            <Button size="lg" asChild className="gap-2">
+
+          {/* Card do Seletor — ocupa toda a largura da coluna */}
+          <div className="bg-primary/5 border border-primary/20 p-6 rounded-xl space-y-4 shadow-sm w-full">
+            <div className="space-y-1">
+              <h3 className="font-semibold text-lg flex items-center gap-2 text-foreground">
+                <Droplets className="h-5 w-5 text-primary" />
+                Comece por aqui
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Selecione o hidrossistema que deseja analisar para liberar os
+                dados.
+              </p>
+              <p className="text-xs text-muted-foreground/80 italic">
+                * O primeiro carregamento pode levar até 1 minuto para iniciar a
+                base de dados.
+              </p>
+            </div>
+            <div className="pt-2">
+              <ReservoirSelector fullWidth />
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 w-full">
+            <Button size="lg" asChild className="gap-2 w-full sm:w-auto">
               <Link href="/visao-geral">
                 Acessar Visão Geral
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" asChild>
+            <Button
+              size="lg"
+              variant="outline"
+              asChild
+              className="w-full sm:w-auto"
+            >
               <Link href="/estado-de-seca">Ver Monitoramento</Link>
             </Button>
           </div>
         </div>
 
-        <div className="flex-1 flex justify-center">
-          <div className="relative w-full max-w-sm aspect-square min-h-[300px] bg-accent/20 rounded-full flex items-center justify-center p-4 md:p-8">
-            <div className="relative w-full h-full">
+        {/* Lado Direito: Logos do Sistema e do Projeto */}
+        <div className="flex-1 flex justify-center items-center w-full mt-8 md:mt-0">
+          <div className="flex flex-col items-center justify-center gap-8 p-8 w-full max-w-sm">
+            {/* Logo Nova (SADGS - Vertical) */}
+            <div className="relative w-40 h-40 sm:w-48 sm:h-48 transition-transform hover:scale-105 duration-300">
               <Image
-                src="/logos/hidrossistemas.png"
-                alt="Logo Hidrossistemas"
+                src="/logos/logo-sadgs.png"
+                alt="Logo Sistema SADGS"
                 fill
-                className="object-contain"
+                className="object-contain drop-shadow-sm"
                 priority
               />
             </div>
@@ -95,15 +125,12 @@ export default function HomePage() {
             description="Visualize a relação entre oferta e demanda hídrica, simulações e cenários futuros."
             href="/balanco-hidrico"
           />
-
-          {/* --- NOVO CARD: SIMULADOR --- */}
           <FeatureCard
             icon={<Waves className="h-8 w-8 text-primary" />}
             title="Simulador de Vazões"
             description="Realize simulações de balanço hídrico baseadas em séries históricas de vazão e evaporação (1911-2017)."
             href="/simulacao"
           />
-
           <FeatureCard
             icon={<AlertTriangle className="h-8 w-8 text-primary" />}
             title="Impactos"
@@ -139,10 +166,7 @@ export default function HomePage() {
             <Card
               key={res.id}
               className="hover:border-primary/50 transition-colors cursor-pointer"
-              onClick={() => {
-                setSelectedReservoir(res);
-                // Opcional: Redirecionar ao clicar
-              }}
+              onClick={() => setSelectedReservoir(res)}
             >
               <CardContent className="flex items-center gap-3 p-4">
                 <div className="bg-primary/10 p-2 rounded-full">

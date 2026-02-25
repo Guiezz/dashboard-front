@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Menu,
   Droplets,
@@ -35,6 +36,9 @@ interface HeaderProps {
 }
 
 export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
+
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-background px-4 lg:px-6">
       {/* Botão menu mobile */}
@@ -144,7 +148,7 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
 
       {/* Ações do lado direito */}
       <div className="flex items-center gap-4">
-        <ReservoirSelector />
+        {!isHomePage && <ReservoirSelector />}{" "}
       </div>
     </header>
   );

@@ -9,12 +9,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function ReservoirSelector() {
+interface ReservoirSelectorProps {
+  fullWidth?: boolean;
+}
+
+export function ReservoirSelector({
+  fullWidth = false,
+}: ReservoirSelectorProps) {
   const { reservatorios, selectedReservoir, setSelectedReservoir, isLoading } =
     useReservoir();
 
   if (isLoading) {
-    return <div className="text-white text-sm">Carregando...</div>;
+    return <div className="text-sm text-muted-foreground">Carregando...</div>;
   }
 
   const handleSelectChange = (reservoirId: string) => {
@@ -24,18 +30,20 @@ export function ReservoirSelector() {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Opcional: Se quiser manter o label "Hidrossistema:" fora, deixe aqui.
-          Se quiser só o dropdown, pode remover o <p> */}
-      <p className="hidden md:block text-sm font-medium">Hidrossistema:</p>
+    <div className={`flex items-center gap-2 ${fullWidth ? "w-full" : ""}`}>
+      {!fullWidth && (
+        <p className="hidden md:block text-sm font-medium whitespace-nowrap">
+          Hidrossistema:
+        </p>
+      )}
 
       <Select
         onValueChange={handleSelectChange}
-        // Se for null, passa string vazia "" para mostrar o placeholder
         value={selectedReservoir ? String(selectedReservoir.id) : ""}
       >
-        <SelectTrigger className="w-[280px]">
-          {/* Aqui mudamos o texto padrão quando nada está selecionado */}
+        <SelectTrigger
+          className={fullWidth ? "w-full h-11 text-base" : "w-[280px]"}
+        >
           <SelectValue placeholder="Selecione o hidrossistema" />
         </SelectTrigger>
         <SelectContent>
