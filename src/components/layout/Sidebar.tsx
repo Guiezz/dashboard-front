@@ -47,7 +47,7 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
         </div>
 
         <TooltipProvider>
-          <nav className="flex-1 overflow-auto px-2 text-sm font-medium lg:px-4 py-2">
+          <nav className="flex-1 overflow-auto px-2 text-sm font-medium lg:px-4 py-2 pb-24">
             {/* Link de Identificação */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -61,7 +61,6 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right">Visão Geral</TooltipContent>
             </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -78,7 +77,6 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 Monitoramento do Estado de Seca
               </TooltipContent>
             </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -97,7 +95,6 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
                 Implementação dos Planos de Secas{" "}
               </TooltipContent>
             </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -112,7 +109,6 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right">Planos de Ação</TooltipContent>
             </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -125,7 +121,6 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right">Impactos</TooltipContent>
             </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -140,7 +135,6 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right">Usos da Água</TooltipContent>
             </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -153,7 +147,6 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right">Balanço Hídrico</TooltipContent>
             </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -168,7 +161,6 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               </TooltipTrigger>
               <TooltipContent side="right">Simulador</TooltipContent>
             </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link

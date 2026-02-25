@@ -49,7 +49,7 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
             <span className="sr-only">Abrir menu de navegação</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="sm:max-w-xs">
+        <SheetContent side="left" className="sm:max-w-xs overflow-y-auto pb-10">
           <SheetHeader className="text-left mb-4">
             <SheetTitle className="flex items-center gap-2">
               <Droplets className="h-6 w-6" />
@@ -57,7 +57,6 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
             </SheetTitle>
             <SheetDescription>Navegação principal do sistema.</SheetDescription>
           </SheetHeader>
-
           <nav className="grid gap-6 text-lg font-medium">
             <Link
               href="/visao-geral"
