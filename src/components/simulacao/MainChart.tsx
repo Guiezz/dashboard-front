@@ -89,19 +89,10 @@ export function MainChart({ data }: MainChartProps) {
                 yAxisId="vol"
                 type="monotone"
                 dataKey="volume_inicial_hm3"
-                name="Volume Inicial"
+                name="Volume"
                 fill="#3b82f6"
                 stroke="#2563eb"
                 fillOpacity={0.2}
-              />
-              <Line
-                yAxisId="vol"
-                type="monotone"
-                dataKey="volume_final_hm3"
-                name="Volume Final"
-                stroke="#ff2c2c"
-                strokeWidth={2}
-                dot={false}
               />
               <Line
                 yAxisId="vazao"
