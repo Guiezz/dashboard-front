@@ -42,7 +42,9 @@ export function ReservoirSelector({
         value={selectedReservoir ? String(selectedReservoir.id) : ""}
       >
         <SelectTrigger
-          className={fullWidth ? "w-full h-11 text-base" : "w-[280px]"}
+          className={
+            fullWidth ? "w-full h-11 text-base bg-amber-50" : "w-[280px]"
+          }
         >
           <SelectValue placeholder="Selecione o hidrossistema" />
         </SelectTrigger>

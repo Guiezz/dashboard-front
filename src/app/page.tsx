@@ -44,11 +44,11 @@ export default function HomePage() {
           {/* Card do Seletor — ocupa toda a largura da coluna */}
           <div className="bg-primary/5 border border-primary/20 p-6 rounded-xl space-y-4 shadow-sm w-full">
             <div className="space-y-1">
-              <h3 className="font-semibold text-lg flex items-center gap-2 text-foreground">
-                <Droplets className="h-5 w-5 text-primary" />
-                Comece por aqui
+              <Droplets className="h-5 w-5 text-primary" />
+              <h3 className="font-bold text-lg flex items-center gap-2 text-foreground">
+                Qual hidrossistema você deseja analisar?
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-semibold text-muted-foreground">
                 Selecione o hidrossistema que deseja analisar para liberar os
                 dados.
               </p>
@@ -73,7 +73,7 @@ export default function HomePage() {
               size="lg"
               variant="outline"
               asChild
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto shadow-amber-600"
             >
               <Link href="/estado-de-seca">Ver Monitoramento</Link>
             </Button>
