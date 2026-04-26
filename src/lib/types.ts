@@ -159,3 +159,20 @@ export interface SimulacaoResponse {
   frequencia_nao_atendida: number;
   volume_final: number;
 }
+
+export interface LoginCredentials {
+  email: string;
+  senha: string;
+}
+
+export interface UsuarioInfo {
+  id: number;
+  nome: string;
+  email: string;
+  role: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  usuario: UsuarioInfo;
+}

@@ -3,10 +3,12 @@
 
 import { useState } from "react";
 import { Inter } from "next/font/google";
+import { usePathname } from "next/navigation"; // Importação necessária
 import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { ReservoirProvider } from "@/context/ReservoirContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,25 +18,37 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
+
+  // Verifica se é a página de login
+  const isLoginPage = pathname === "/login";
 
   return (
     <html lang="pt-br" suppressHydrationWarning>
       <body className={inter.className}>
-        <ReservoirProvider>
-          <div className="flex min-h-screen w-full">
-            <Sidebar isCollapsed={isCollapsed} />
+        <AuthProvider>
+          <ReservoirProvider>
+            <div className="flex min-h-screen w-full bg-background">
+              {/* Só renderiza Sidebar se não for login */}
+              {!isLoginPage && <Sidebar isCollapsed={isCollapsed} />}
 
-            <div className="flex flex-1 flex-col">
-              <Header
-                isCollapsed={isCollapsed}
-                setIsCollapsed={setIsCollapsed}
-              />
-              <main className="flex-1 overflow-auto p-4 sm:px-6 sm:py-4">
-                {children}
-              </main>
+              <div className="flex flex-1 flex-col">
+                {/* Só renderiza Header se não for login */}
+                {!isLoginPage && (
+                  <Header
+                    isCollapsed={isCollapsed}
+                    setIsCollapsed={setIsCollapsed}
+                  />
+                )}
+                <main
+                  className={`flex-1 overflow-auto ${!isLoginPage ? "p-4 sm:px-6 sm:py-4" : ""}`}
+                >
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
-        </ReservoirProvider>
+          </ReservoirProvider>
+        </AuthProvider>
       </body>
     </html>
   );

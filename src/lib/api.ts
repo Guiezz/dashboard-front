@@ -12,39 +12,44 @@ import {
   SimAcude,
   SimulacaoRequest,
   SimulacaoResponse,
+  LoginCredentials,
+  AuthResponse,
 } from "./types";
 import { config } from "@/config";
 
-// Define a URL base. Se não houver variável de ambiente, usa o localhost do Docker/Go
 const API_BASE_URL = config.apiBaseUrl;
 
-/**
- * Função genérica para fazer as chamadas (Fetch Wrapper)
- */
 async function fetchAPI<T>(
   endpoint: string,
   options?: RequestInit,
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...options?.headers,
+  };
+
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("cogerh_token");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
   const res = await fetch(url, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-    // O Next.js faz cache por padrão. 'no-store' garante dados frescos.
+    headers,
     cache: "no-store",
   });
 
   if (!res.ok) {
-    // Tenta ler o erro que vem do Go
     let errorMessage = `Erro na API: ${res.status} ${res.statusText}`;
     try {
       const errorData = await res.json();
       if (errorData.error) errorMessage = errorData.error;
     } catch (e) {
-      // Ignora erro de parse se não for JSON
+      // Ignora erro de parse
     }
     throw new Error(errorMessage);
   }
@@ -53,6 +58,26 @@ async function fetchAPI<T>(
 }
 
 export const api = {
+  // --- AUTENTICAÇÃO E EDIÇÃO (Novos) ---
+  login: (credentials: LoginCredentials) =>
+    fetchAPI<AuthResponse>("/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    }),
+
+  updateActionStatus: (
+    reservatorioId: number,
+    acaoId: number,
+    situacao: string,
+  ) =>
+    fetchAPI<{ message: string }>(
+      `/reservatorios/${reservatorioId}/action-plans/${acaoId}/status`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ situacao }),
+      },
+    ),
+
   // --- RESERVATÓRIOS (Geral) ---
   getReservatorios: () => fetchAPI<Reservatorio[]>("/reservatorios"),
 
@@ -70,14 +95,22 @@ export const api = {
   getHistory: (id: number) =>
     fetchAPI<HistoryEntry[]>(`/reservatorios/${id}/history`),
 
-  // --- PLANOS DE AÇÃO (Novas rotas separadas) ---
-  getOngoingActions: (id: number) =>
-    fetchAPI<PlanoAcao[]>(`/reservatorios/${id}/ongoing-actions`),
+  // --- PLANOS DE AÇÃO ---
+  getNotStartedActions: (id: number, estado?: string) =>
+    fetchAPI<PlanoAcao[]>(
+      `/reservatorios/${id}/not-started-actions${estado ? `?estado=${encodeURIComponent(estado)}` : ""}`,
+    ),
 
-  getCompletedActions: (id: number) =>
-    fetchAPI<PlanoAcao[]>(`/reservatorios/${id}/completed-actions`),
+  getOngoingActions: (id: number, estado?: string) =>
+    fetchAPI<PlanoAcao[]>(
+      `/reservatorios/${id}/ongoing-actions${estado ? `?estado=${encodeURIComponent(estado)}` : ""}`,
+    ),
 
-  // Busca planos com filtros (para a página dedicada de Planos)
+  getCompletedActions: (id: number, estado?: string) =>
+    fetchAPI<PlanoAcao[]>(
+      `/reservatorios/${id}/completed-actions${estado ? `?estado=${encodeURIComponent(estado)}` : ""}`,
+    ),
+
   getActionPlans: (
     id: number,
     filters?: {
@@ -114,12 +147,9 @@ export const api = {
   getResponsaveis: (id: number) =>
     fetchAPI<Responsavel[]>(`/reservatorios/${id}/responsibles`),
 
-  // --- SIMULAÇÃO (Novo) ---
-
-  // Lista os açudes disponíveis para simular (vem da tabela sim_acudes)
+  // --- SIMULAÇÃO ---
   getSimulacaoAcudes: () => fetchAPI<SimAcude[]>("/simulacao/acudes"),
 
-  // Executa a simulação enviando os parâmetros
   runSimulacao: (params: SimulacaoRequest) =>
     fetchAPI<SimulacaoResponse>("/simulacao/run", {
       method: "POST",
