@@ -2,7 +2,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext"; // 1. Import do hook de auth
 import {
   Menu,
   Droplets,
@@ -17,6 +18,8 @@ import {
   Hammer,
   Smile,
   Cog,
+  ShieldAlert, // 2. Ícone para o painel
+  LogOut, // 3. Ícone para sair
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +32,6 @@ import {
 } from "@/components/ui/sheet";
 import { ReservoirSelector } from "./ReservoirSelector";
 
-// Props para controle da Sidebar
 interface HeaderProps {
   isCollapsed: boolean;
   setIsCollapsed: (isCollapsed: boolean) => void;
@@ -37,7 +39,16 @@ interface HeaderProps {
 
 export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const isHomePage = pathname === "/";
+
+  // Pegamos os dados do contexto
+  const { isAuthenticated, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
 
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-background px-4 lg:px-6">
@@ -107,7 +118,6 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
               <Scale className="h-5 w-5" />
               Balanço Hídrico
             </Link>
-
             <Link
               href="/simulacao"
               className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
@@ -115,7 +125,6 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
               <Cog className="h-5 w-5" />
               Simulador
             </Link>
-
             <Link
               href="/responsaveis"
               className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
@@ -123,6 +132,27 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
               <Smile className="h-5 w-5" />
               Responsáveis
             </Link>
+
+            {/* Links protegidos para o menu mobile */}
+            {isAuthenticated && (
+              <>
+                <div className="my-2 border-t border-border"></div>
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-4 rounded-xl px-3 py-2 text-primary font-medium bg-primary/5 hover:bg-primary/10"
+                >
+                  <ShieldAlert className="h-5 w-5" />
+                  Painel Administrativo
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-4 rounded-xl px-3 py-2 text-destructive hover:bg-destructive/10 text-left"
+                >
+                  <LogOut className="h-5 w-5" />
+                  Sair do Sistema
+                </button>
+              </>
+            )}
           </nav>
         </SheetContent>
       </Sheet>
@@ -147,7 +177,20 @@ export function Header({ isCollapsed, setIsCollapsed }: HeaderProps) {
 
       {/* Ações do lado direito */}
       <div className="flex items-center gap-4">
-        {!isHomePage && <ReservoirSelector />}{" "}
+        {!isHomePage && <ReservoirSelector />}
+
+        {/* Botão rápido de sair na barra superior (Desktop) */}
+        {isAuthenticated && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="hidden md:flex gap-2 text-muted-foreground hover:text-destructive"
+          >
+            <LogOut className="h-4 w-4" />
+            Sair
+          </Button>
+        )}
       </div>
     </header>
   );

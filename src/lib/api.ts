@@ -96,11 +96,20 @@ export const api = {
     fetchAPI<HistoryEntry[]>(`/reservatorios/${id}/history`),
 
   // --- PLANOS DE AÇÃO ---
-  getOngoingActions: (id: number) =>
-    fetchAPI<PlanoAcao[]>(`/reservatorios/${id}/ongoing-actions`),
+  getNotStartedActions: (id: number, estado?: string) =>
+    fetchAPI<PlanoAcao[]>(
+      `/reservatorios/${id}/not-started-actions${estado ? `?estado=${encodeURIComponent(estado)}` : ""}`,
+    ),
 
-  getCompletedActions: (id: number) =>
-    fetchAPI<PlanoAcao[]>(`/reservatorios/${id}/completed-actions`),
+  getOngoingActions: (id: number, estado?: string) =>
+    fetchAPI<PlanoAcao[]>(
+      `/reservatorios/${id}/ongoing-actions${estado ? `?estado=${encodeURIComponent(estado)}` : ""}`,
+    ),
+
+  getCompletedActions: (id: number, estado?: string) =>
+    fetchAPI<PlanoAcao[]>(
+      `/reservatorios/${id}/completed-actions${estado ? `?estado=${encodeURIComponent(estado)}` : ""}`,
+    ),
 
   getActionPlans: (
     id: number,
