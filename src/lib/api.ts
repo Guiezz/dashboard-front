@@ -25,9 +25,10 @@ async function fetchAPI<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  const headers: HeadersInit = {
+  // Correção do erro de tipo: Definindo headers como um objeto que aceita chaves do tipo string
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...options?.headers,
+    ...(options?.headers as Record<string, string>),
   };
 
   if (typeof window !== "undefined") {
@@ -58,7 +59,7 @@ async function fetchAPI<T>(
 }
 
 export const api = {
-  // --- AUTENTICAÇÃO E EDIÇÃO (Novos) ---
+  // --- AUTENTICAÇÃO E EDIÇÃO ---
   login: (credentials: LoginCredentials) =>
     fetchAPI<AuthResponse>("/login", {
       method: "POST",
