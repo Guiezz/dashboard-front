@@ -49,8 +49,8 @@ export default function LoginPage() {
         <CardHeader className="space-y-1 flex flex-col items-center">
           <div className="mb-4">
             <Image
-              src="/logos/cogerh.png"
-              alt="Logo COGERH"
+              src="/logos/logo-sadgs.png"
+              alt="Logo Sistema de Apoio a Decisão"
               width={120}
               height={40}
               className="dark:brightness-0 dark:invert"
@@ -60,8 +60,7 @@ export default function LoginPage() {
             Acesso Restrito
           </CardTitle>
           <CardDescription className="text-center">
-            Entre com suas credenciais da COGERH para gerenciar o andamento das
-            ações
+            Entre com suas credenciais para gerenciar o andamento das ações
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -99,7 +98,7 @@ export default function LoginPage() {
           <CardFooter>
             <Button
               type="submit"
-              className="w-full font-semibold"
+              className="w-full font-semibold mt-4"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
